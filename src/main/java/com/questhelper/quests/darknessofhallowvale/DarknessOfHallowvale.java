@@ -25,38 +25,42 @@
 package com.questhelper.quests.darknessofhallowvale;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.player.InInstanceRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
 import com.questhelper.requirements.Requirement;
-import com.questhelper.requirements.Spellbook;
-import com.questhelper.requirements.SpellbookRequirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.player.SpellbookRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.WidgetTextRequirement;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
+import com.questhelper.requirements.util.Spellbook;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.InInstanceCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -64,12 +68,16 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class DarknessOfHallowvale extends BasicQuestHelper
 {
-	ItemRequirement nails8, nails4, planks2, planks1, hammer, pickaxe, knife, airRune, lawRune, doorKey, ladderPiece, message, charcoal, papyrus, sketch1, sketch2, sketch3,
+	//Items Recommended
+	ItemRequirement airRune, lawRune;
+
+	//Items Required
+	ItemRequirement nails8, nails4, planks2, planks1, hammer, pickaxe, knife, doorKey, ladderPiece, message, charcoal, papyrus, sketch1, sketch2, sketch3,
 		largeOrnateKey, messageFromFireplace, haemBook, sealedMessage;
 
 	Requirement normalSpellbook;
 
-	ConditionForStep inNewBase, inTemple, inMeiyditch, inMyrequeBase, inMine, inNorthMeiy, inRandomRoom, atBarricade, pushedBoat, onEntryWall, onSecondWall, onThirdWall,
+	Requirement inNewBase, inTemple, inMeiyditch, inMyrequeBase, inMine, inNorthMeiy, inRandomRoom, atBarricade, pushedBoat, onEntryWall, onSecondWall, onThirdWall,
 		onFourthWall, onDrakanWalls, inVanstromFight, knockedDownBoard, hasDoorKey, pathDoorOpen, hasLadderPiece, fixedLadder, wallPressed, searchedRockySurface, hasSketches,
 		hasLargeOrnateKey, hasMessage, cutPortrait, handedInSketches, tapestryCut, keyPlaced, hasTeleGrabRunesOrSearchedCase, searchedRuneCase, inLab, hasHaemBook;
 
@@ -87,13 +95,14 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 		climbUpDrakanWalls, talkToSafalaan, drawNorthWall, drawWestWall,
 		drawSouthWall, tankVanstrom, finishSouthSketch, talkToSarius, talkToSafalaanInBase;
 
-	DetailedQuestStep lookAtFireplace, useKnifeOnFireplace, readMessage, inspectPortrait, useKnifeOnPortrait, leaveMeiyerBase, useKnifeOnTapestry, useKeyOnStatue, goDownToLab,
+	DetailedQuestStep useKnifeOnFireplace, readMessage, inspectPortrait, useKnifeOnPortrait, leaveMeiyerBase, useKnifeOnTapestry, useKeyOnStatue, goDownToLab,
 		getRunes, telegrabBook, leaveLab;
 
 	ConditionalStep startQuest, goTravelToMyrequeBase, talkToVeliafAfterContact, talkToVeliafAfterLetter, talkToDrezelAfterVeliaf, talkToDrezelAfterBushes,
 		talkToVeliafAfterDrezel, returnToMeiyerditch, goToSafalaan, goSketchNorth, goSketchWest, goSketchSouth, goTalkToSarius, goFinishSouthSketch,
 		goOpenFireplace, returnToSafalaanInBase, returnToSafalaanInBaseNoSketches, goUnlockLab, getHaemBook, bringSafalaanBook, bringMessageToVeliafToFinish;
 
+	//Zones
 	Zone newBase, temple, entryWall, entryWall2, meiyerditch, myrequeBase, mine, northMeiy, randomRoom, barricade1, barricade2, barricade3, secondWall, secondWall2, thirdWall,
 		fourthWall, fourthWall2, drakanWalls, drakanWalls2, lab;
 
@@ -193,7 +202,7 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 		nails8 = new ItemRequirement("Nails", ItemCollections.getNails(), 8);
 		nails4 = new ItemRequirement("Nails", ItemCollections.getNails(), 4);
 		pickaxe = new ItemRequirement("Any pickaxe", ItemCollections.getPickaxes());
-		pickaxe.setTip("You can get one from one of the miners in the mine");
+		pickaxe.setTooltip("You can get one from one of the miners in the mine");
 		knife = new ItemRequirement("Knife", ItemID.KNIFE);
 		airRune = new ItemRequirement("Air rune", ItemID.AIR_RUNE);
 		lawRune = new ItemRequirement("Law rune", ItemID.LAW_RUNE);
@@ -202,10 +211,12 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 		ladderPiece = new ItemRequirement("Ladder top", ItemID.LADDER_TOP);
 
 		message = new ItemRequirement("Message", ItemID.MESSAGE_9633);
-		message.setTip("You can get another from Vertida in the Meiyditch Myreque base");
+		message.setTooltip("You can get another from Vertida in the Meiyerditch Myreque base");
 
 		charcoal = new ItemRequirement("Charcoal", ItemID.CHARCOAL);
+		charcoal.setHighlightInInventory(true);
 		papyrus = new ItemRequirement("Papyrus", ItemID.PAPYRUS);
+		papyrus.setHighlightInInventory(true);
 		sketch1 = new ItemRequirement("Castle sketch 1", ItemID.CASTLE_SKETCH_1);
 		sketch2 = new ItemRequirement("Castle sketch 2", ItemID.CASTLE_SKETCH_2);
 		sketch3 = new ItemRequirement("Castle sketch 3", ItemID.CASTLE_SKETCH_3);
@@ -215,7 +226,7 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 		messageFromFireplace.setHighlightInInventory(true);
 		haemBook = new ItemRequirement("Haemalchemy volume 1", ItemID.HAEMALCHEMY_VOLUME_1);
 		sealedMessage = new ItemRequirement("Sealed message", ItemID.SEALED_MESSAGE);
-		sealedMessage.setTip("You can get another from Safalaan");
+		sealedMessage.setTooltip("You can get another from Safalaan");
 
 		normalSpellbook = new SpellbookRequirement(Spellbook.NORMAL);
 	}
@@ -246,47 +257,47 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inNewBase = new ZoneCondition(newBase);
-		inTemple = new ZoneCondition(temple);
-		onEntryWall = new ZoneCondition(entryWall, entryWall2);
-		inMeiyditch = new ZoneCondition(meiyerditch, drakanWalls, drakanWalls2);
-		inMyrequeBase = new ZoneCondition(myrequeBase);
-		inMine = new ZoneCondition(mine);
-		inNorthMeiy = new ZoneCondition(northMeiy);
-		inRandomRoom = new ZoneCondition(randomRoom);
-		atBarricade = new ZoneCondition(barricade1, barricade2, barricade3);
-		onSecondWall = new ZoneCondition(secondWall, secondWall2);
-		onThirdWall = new ZoneCondition(thirdWall);
-		onFourthWall = new ZoneCondition(fourthWall, fourthWall2);
-		onDrakanWalls = new ZoneCondition(drakanWalls, drakanWalls2);
-		inVanstromFight = new Conditions(onDrakanWalls, new InInstanceCondition());
-		inLab = new ZoneCondition(lab);
+		inNewBase = new ZoneRequirement(newBase);
+		inTemple = new ZoneRequirement(temple);
+		onEntryWall = new ZoneRequirement(entryWall, entryWall2);
+		inMeiyditch = new ZoneRequirement(meiyerditch, drakanWalls, drakanWalls2);
+		inMyrequeBase = new ZoneRequirement(myrequeBase);
+		inMine = new ZoneRequirement(mine);
+		inNorthMeiy = new ZoneRequirement(northMeiy);
+		inRandomRoom = new ZoneRequirement(randomRoom);
+		atBarricade = new ZoneRequirement(barricade1, barricade2, barricade3);
+		onSecondWall = new ZoneRequirement(secondWall, secondWall2);
+		onThirdWall = new ZoneRequirement(thirdWall);
+		onFourthWall = new ZoneRequirement(fourthWall, fourthWall2);
+		onDrakanWalls = new ZoneRequirement(drakanWalls, drakanWalls2);
+		inVanstromFight = new Conditions(onDrakanWalls, new InInstanceRequirement());
+		inLab = new ZoneRequirement(lab);
 
-		pushedBoat = new VarbitCondition(2587, 1);
-		knockedDownBoard = new VarbitCondition(2589, 1);
+		pushedBoat = new VarbitRequirement(2587, 1);
+		knockedDownBoard = new VarbitRequirement(2589, 1);
 
-		hasDoorKey = new ItemRequirementCondition(doorKey);
-		pathDoorOpen = new VarbitCondition(2578, 1);
-		hasLadderPiece = new ItemRequirementCondition(ladderPiece);
+		hasDoorKey = new ItemRequirements(doorKey);
+		pathDoorOpen = new VarbitRequirement(2578, 1);
+		hasLadderPiece = new ItemRequirements(ladderPiece);
 
-		fixedLadder = new VarbitCondition(2598, 2);
-		wallPressed = new VarbitCondition(2590, 1, Operation.GREATER_EQUAL);
+		fixedLadder = new VarbitRequirement(2598, 2);
+		wallPressed = new VarbitRequirement(2590, 1, Operation.GREATER_EQUAL);
 
-		searchedRockySurface = new Conditions(true, new WidgetTextCondition(229, 1, "a mechanical click."));
+		searchedRockySurface = new Conditions(true, new WidgetTextRequirement(229, 1, "a mechanical click."));
 
-		hasSketches = new ItemRequirementCondition(sketch1, sketch2, sketch3);
-		hasMessage = new ItemRequirementCondition(messageFromFireplace);
-		hasLargeOrnateKey = new ItemRequirementCondition(largeOrnateKey);
+		hasSketches = new ItemRequirements(sketch1, sketch2, sketch3);
+		hasMessage = new ItemRequirements(messageFromFireplace);
+		hasLargeOrnateKey = new ItemRequirements(largeOrnateKey);
 
-		cutPortrait = new VarbitCondition(2595, 1, Operation.GREATER_EQUAL);
+		cutPortrait = new VarbitRequirement(2595, 1, Operation.GREATER_EQUAL);
 
-		handedInSketches = new VarbitCondition(2575, 1);
-		tapestryCut = new VarbitCondition(2594, 1);
-		keyPlaced = new VarbitCondition(2596, 1);
+		handedInSketches = new VarbitRequirement(2575, 1);
+		tapestryCut = new VarbitRequirement(2594, 1);
+		keyPlaced = new VarbitRequirement(2596, 1);
 
-		searchedRuneCase = new VarbitCondition(2584, 1);
-		hasTeleGrabRunesOrSearchedCase = new Conditions(LogicType.OR, searchedRuneCase, new ItemRequirementCondition(lawRune, airRune));
-		hasHaemBook = new ItemRequirementCondition(haemBook);
+		searchedRuneCase = new VarbitRequirement(2584, 1);
+		hasTeleGrabRunesOrSearchedCase = new Conditions(LogicType.OR, searchedRuneCase, new ItemRequirements(lawRune, airRune));
+		hasHaemBook = new ItemRequirements(haemBook);
 
 		// Repaired boat, 2585 = 1
 		// Repaired chute 2586 = 1
@@ -338,7 +349,7 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 
 		travelToPots = new ObjectStep(this, ObjectID.POTS_18065, new WorldPoint(3608, 3222, 0), "Follow the path to the Meiyerditch Myreque base. When you reach some pots, search them for a key to open the door.");
 
-		ArrayList<WorldPoint> pathToPots = new ArrayList<>(Arrays.asList(
+		List<WorldPoint> pathToPots = Arrays.asList(
 			new WorldPoint(3602, 3207, 0),
 			new WorldPoint(3597, 3207, 0),
 			new WorldPoint(3597, 3204, 0),
@@ -357,7 +368,9 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 			new WorldPoint(3601, 3214, 0),
 			new WorldPoint(3598, 3214, 0),
 			new WorldPoint(3598, 3216, 0),
-			new WorldPoint(0, 0, 0),
+
+			new WorldPoint(3598, 3216, 3),
+
 			new WorldPoint(3598, 3219, 0),
 			new WorldPoint(3594, 3223, 0),
 			new WorldPoint(3594, 3223, 1),
@@ -368,12 +381,12 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 			new WorldPoint(3603, 3223, 1),
 			new WorldPoint(3603, 3221, 0),
 			new WorldPoint(3608, 3221, 0)
-		));
+		);
 		travelToPots.setLinePoints(pathToPots);
 
-		ArrayList<WorldPoint> pathToLadderDivision = new ArrayList<>();
+		List<WorldPoint> pathToLadderDivision = new ArrayList<>();
 		pathToLadderDivision.addAll(pathToPots);
-		pathToLadderDivision.addAll(new ArrayList<>(Arrays.asList(
+		pathToLadderDivision.addAll(Arrays.asList(
 			new WorldPoint(3612, 3221, 0),
 			new WorldPoint(3615, 3223, 0),
 			new WorldPoint(3615, 3220, 0),
@@ -412,11 +425,11 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 			new WorldPoint(3621, 3238, 1),
 			new WorldPoint(3621, 3240, 1),
 			new WorldPoint(3626, 3240, 1)
-		)));
+		));
 
-		ArrayList<WorldPoint> pathToLadderPiece = new ArrayList<>();
+		List<WorldPoint> pathToLadderPiece = new ArrayList<>();
 		pathToLadderPiece.addAll(pathToLadderDivision);
-		pathToLadderPiece.addAll(new ArrayList<>(Arrays.asList(
+		pathToLadderPiece.addAll(Arrays.asList(
 			new WorldPoint(3626, 3238, 1),
 			new WorldPoint(3628, 3238, 1),
 			new WorldPoint(3629, 3238, 1),
@@ -426,12 +439,13 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 			new WorldPoint(3631, 3241, 2),
 			new WorldPoint(3627, 3241, 2),
 			new WorldPoint(3626, 3240, 2)
-		)));
+		));
 
-		travelToLadderPart = new ObjectStep(this, NullObjectID.NULL_18115, new WorldPoint(3625, 3240, 2), "Continue until you reach a wall with a ladder piece, and take it.");
+		travelToLadderPart = new ObjectStep(this, NullObjectID.NULL_18115, new WorldPoint(3625, 3240, 2),
+			"Continue until you reach a wall with a ladder piece, and take it.");
 		travelToLadderPart.setLinePoints(pathToLadderPiece);
 
-		ArrayList<WorldPoint> pathToPlaceLadder = new ArrayList<>(new ArrayList<>(Arrays.asList(
+		List<WorldPoint> pathToPlaceLadder = Arrays.asList(
 			new WorldPoint(3627, 3241, 2),
 			new WorldPoint(3631, 3241, 2),
 			new WorldPoint(3631, 3239, 2),
@@ -441,14 +455,15 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 			new WorldPoint(3626, 3238, 1),
 			new WorldPoint(3626, 3240, 1),
 			new WorldPoint(3629, 3240, 1)
-		)));
+		);
 
-		travelToFixLadder = new ObjectStep(this, NullObjectID.NULL_18116, new WorldPoint(3629, 3240, 1), "Repair the ladder downstairs.");
+		travelToFixLadder = new ObjectStep(this, NullObjectID.NULL_18116, new WorldPoint(3629, 3240, 1),
+			"Repair the ladder downstairs.");
 		travelToFixLadder.setLinePoints(pathToPlaceLadder);
 
-		ArrayList<WorldPoint> pathToBase = new ArrayList<>();
+		List<WorldPoint> pathToBase = new ArrayList<>();
 		pathToBase.addAll(pathToLadderDivision);
-		pathToBase.addAll(new ArrayList<>(Arrays.asList(
+		pathToBase.addAll(Arrays.asList(
 			new WorldPoint(3629, 3240, 1),
 			new WorldPoint(3630, 3240, 0),
 			new WorldPoint(3633, 3240, 0),
@@ -474,7 +489,7 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 			new WorldPoint(3639, 3258, 0),
 			new WorldPoint(3640, 3258, 0),
 			new WorldPoint(3640, 3253, 0)
-		)));
+		));
 
 		travelToMyrequeBase = new ObjectStep(this, ObjectID.WALL_17980, new WorldPoint(3640, 3253, 0), "Use a knife on the wall you eventually reach.");
 		travelToMyrequeBase.setLinePoints(pathToBase);
@@ -507,7 +522,7 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 		mineDaeyaltThenLeave = new NpcStep(this, NpcID.VAMPYRE_JUVINATE, new WorldPoint(2389, 4624, 2), "Mine Daeyalt ore from the walls and put them into the mine carts. Once you've mined 15, talk to the vampyres to leave.", pickaxe);
 		mineDaeyaltThenLeave.addDialogStep("Do you have a spare pick?");
 
-		ArrayList<WorldPoint> pathFromMineToBase = new ArrayList<>(Arrays.asList(
+		List<WorldPoint> pathFromMineToBase = Arrays.asList(
 			new WorldPoint(3623, 3324, 0),
 			new WorldPoint(3631, 3324, 0),
 			new WorldPoint(3631, 3303, 0),
@@ -529,7 +544,7 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 			new WorldPoint(3639, 3256, 0),
 			new WorldPoint(3640, 3256, 0),
 			new WorldPoint(3640, 3250, 0)
-		));
+		);
 
 		returnToMeiyBase = new ObjectStep(this, NullObjectID.NULL_18146, new WorldPoint(3638, 3251, 0), "Press the decorated wall to unlock the base's entrance.");
 		returnToMeiyBase.setLinePoints(pathFromMineToBase);
@@ -553,8 +568,29 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 		talkToSarius = new NpcStep(this, NpcID.SARIUS_GUILE, new WorldPoint(3572, 3331, 0), "");
 		talkToSafalaanInBase = new NpcStep(this, NpcID.SAFALAAN_HALLOW, new WorldPoint(3627, 9644, 0), "Talk to Safalaan in the north room.");
 
-		lookAtFireplace = new ObjectStep(this, ObjectID.FIREPLACE_18039, new WorldPoint(3627, 3253, 0), "");
+		List<WorldPoint> pathFromMineToFireplace = Arrays.asList(
+			new WorldPoint(3623, 3324, 0),
+			new WorldPoint(3631, 3324, 0),
+			new WorldPoint(3631, 3303, 0),
+			new WorldPoint(3628, 3300, 0),
+			new WorldPoint(3628, 3294, 0),
+			new WorldPoint(3633, 3294, 0),
+			new WorldPoint(3633, 3288, 0),
+			new WorldPoint(3635, 3288, 0),
+			new WorldPoint(3635, 3284, 0),
+			new WorldPoint(3632, 3284, 0),
+			new WorldPoint(3632, 3277, 0),
+			new WorldPoint(3634, 3277, 0),
+			new WorldPoint(3634, 3267, 0),
+			new WorldPoint(3631, 3267, 0),
+			new WorldPoint(3631, 3261, 0),
+			new WorldPoint(3624, 3261, 0),
+			new WorldPoint(3624, 3252, 0),
+			new WorldPoint(2627, 3252, 0)
+		);
+
 		useKnifeOnFireplace = new ObjectStep(this, ObjectID.FIREPLACE_18039, new WorldPoint(3627, 3253, 0), "");
+		useKnifeOnFireplace.setLinePoints(pathFromMineToFireplace);
 		useKnifeOnFireplace.addIcon(ItemID.KNIFE);
 		readMessage = new DetailedQuestStep(this, "Read the message.", messageFromFireplace);
 		useKnifeOnPortrait = new ObjectStep(this, NullObjectID.NULL_18126, new WorldPoint(3627, 3248, 0), "Use a knife on the portrait south of the fireplace.");
@@ -562,7 +598,33 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 		inspectPortrait = new ObjectStep(this, NullObjectID.NULL_18126, new WorldPoint(3627, 3248, 0), "Inspect the portrait south of the fireplace.");
 		useKnifeOnPortrait.addSubSteps(inspectPortrait);
 		leaveMeiyerBase = new ObjectStep(this, ObjectID.LADDER_17986, new WorldPoint(3626, 9617, 0), "Go up to the surface.");
+
+		List<WorldPoint> pathFromBaseToTapestry = Arrays.asList(
+			new WorldPoint(3640, 3253, 0),
+			new WorldPoint(3640, 3258, 0),
+			new WorldPoint(3639, 3258, 0),
+			new WorldPoint(3639, 3255, 1),
+			new WorldPoint(3636, 3256, 1),
+			new WorldPoint(3632, 3256, 1),
+			new WorldPoint(3631, 3258, 1),
+			new WorldPoint(3631, 3259, 0),
+			new WorldPoint(3631, 3267, 0),
+			new WorldPoint(3634, 3267, 0),
+			new WorldPoint(3634, 3278, 0),
+			new WorldPoint(3632, 3278, 0),
+			new WorldPoint(3632, 3283, 0),
+			new WorldPoint(3635, 3283, 0),
+			new WorldPoint(3635, 3289, 0),
+			new WorldPoint(3633, 3289, 0),
+			new WorldPoint(3633, 3293, 0),
+			new WorldPoint(3635, 3293, 0),
+			new WorldPoint(3635, 3300, 0),
+			new WorldPoint(3640, 3300, 0),
+			new WorldPoint(3640, 3302, 0)
+		);
+
 		useKnifeOnTapestry = new ObjectStep(this, NullObjectID.NULL_18125, new WorldPoint(3638, 3304, 0), "Slash the tapestry in the building in north east Meiyerditch.");
+		useKnifeOnTapestry.setLinePoints(pathFromBaseToTapestry);
 		useKnifeOnTapestry.addIcon(ItemID.KNIFE);
 		useKeyOnStatue = new ObjectStep(this, NullObjectID.NULL_18127, new WorldPoint(3641, 3304, 0), "Use the ornate key on the nearby statue.", largeOrnateKey);
 		useKeyOnStatue.addIcon(ItemID.LARGE_ORNATE_KEY);
@@ -603,7 +665,7 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 		getToNorthMeiy.addStep(inMine, mineDaeyaltThenLeave);
 		getToNorthMeiy.addStep(inMeiyditch, goToMines);
 
-		returnToMeiyerditch = new ConditionalStep(this, getToNorthMeiy, "Return to the Meiyditch Myreque base.");
+		returnToMeiyerditch = new ConditionalStep(this, getToNorthMeiy, "Return to the Meiyerditch Myreque base.");
 		returnToMeiyerditch.addStep(inMyrequeBase, talkToVertida);
 		returnToMeiyerditch.addStep(wallPressed, enterRug);
 		returnToMeiyerditch.addStep(inNorthMeiy, returnToMeiyBase);
@@ -622,10 +684,10 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 		goToSafalaan.addStep(onDrakanWalls, talkToSafalaan);
 		goToSafalaan.addDialogStep("Okay, lead the way.");
 
-		goSketchNorth = new ConditionalStep(this, navigateWalls, "Sketch the north side of Castle Drakan.", papyrus, charcoal);
+		goSketchNorth = new ConditionalStep(this, navigateWalls, "Sketch the north side of Castle Drakan by using the charcoal on some papyrus.", papyrus, charcoal);
 		goSketchNorth.addStep(onDrakanWalls, drawNorthWall);
 
-		goSketchWest = new ConditionalStep(this, navigateWalls, "Sketch the west side of Castle Drakan.", papyrus, charcoal);
+		goSketchWest = new ConditionalStep(this, navigateWalls, "Sketch the west side of Castle Drakan by using the charcoal on some papyrus.", papyrus, charcoal);
 		goSketchWest.addStep(onDrakanWalls, drawWestWall);
 
 		goSketchSouth = new ConditionalStep(this, navigateWalls, "Sketch the south side of Castle Drakan. Be prepared to tank some hits from Vanstrom Klause.", papyrus, charcoal);
@@ -675,43 +737,60 @@ public class DarknessOfHallowvale extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<Requirement> getGeneralRequirements()
+	public List<Requirement> getGeneralRecommended()
 	{
-		return new ArrayList<>(Collections.singletonList(normalSpellbook));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(normalSpellbook);
+		return req;
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<Requirement> getGeneralRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(hammer, planks2, nails8, knife));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.IN_AID_OF_THE_MYREQUE, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.CONSTRUCTION, 5));
+		req.add(new SkillRequirement(Skill.MINING, 20));
+		req.add(new SkillRequirement(Skill.THIEVING, 22));
+		req.add(new SkillRequirement(Skill.AGILITY, 26));
+		req.add(new SkillRequirement(Skill.CRAFTING, 32));
+		req.add(new SkillRequirement(Skill.MAGIC, 33));
+		req.add(new SkillRequirement(Skill.STRENGTH, 40));
+		return req;
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(lawRune, airRune));
+		return Arrays.asList(hammer, planks2, nails8, knife);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Collections.singletonList("Able to survive 5 hits from Vanstrom Klause (level 169)"));
+		return Arrays.asList(lawRune, airRune);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<String> getCombatRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Infiltrating Meiyerditch", new ArrayList<>(Arrays.asList(startQuest, leavePubBasement, usePlankOnBoat, usePlankOnChute, pushBoat,
-			boardBoat, kickBoard, climbDownBoard, talkToCitizen, talkToRal, goTravelToMyrequeBase, pressDecoratedWall, enterRug, talkToVertida, talkToVeliafAfterContact)), hammer, planks2, nails8, knife));
+		return Collections.singletonList("Able to survive 5 hits from Vanstrom Klause (level 169)");
+	}
 
-		allSteps.add(new PanelDetails("Murder at Paterdomus", new ArrayList<>(Arrays.asList(talkToDrezelAfterVeliaf, searchBushes, talkToDrezelAfterBushes, talkToRoald,
-			talkToVeliafAfterDrezel))));
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Infiltrating Meiyerditch", Arrays.asList(startQuest, leavePubBasement, usePlankOnBoat, usePlankOnChute, pushBoat,
+			boardBoat, kickBoard, climbDownBoard, talkToCitizen, talkToRal, goTravelToMyrequeBase, pressDecoratedWall, enterRug, talkToVertida, talkToVeliafAfterContact), hammer, planks2, nails8, knife));
 
-		allSteps.add(new PanelDetails("Mapping Castle Drakan", new ArrayList<>(Arrays.asList(returnToMeiyerditch, goToSafalaan, goSketchNorth, goSketchWest, goSketchSouth,
-			tankVanstrom, goTalkToSarius, goFinishSouthSketch, goOpenFireplace, useKnifeOnPortrait, readMessage, returnToSafalaanInBaseNoSketches)), knife));
+		allSteps.add(new PanelDetails("Murder at Paterdomus", Arrays.asList(talkToDrezelAfterVeliaf, searchBushes, talkToDrezelAfterBushes, talkToRoald,
+			talkToVeliafAfterDrezel)));
 
-		allSteps.add(new PanelDetails("Investigate the lab", new ArrayList<>(Arrays.asList(useKnifeOnTapestry, useKeyOnStatue, goDownToLab, telegrabBook, bringSafalaanBook, bringMessageToVeliafToFinish)), knife));
+		allSteps.add(new PanelDetails("Mapping Castle Drakan", Arrays.asList(returnToMeiyerditch, goToSafalaan, goSketchNorth, goSketchWest, goSketchSouth,
+			tankVanstrom, goTalkToSarius, goFinishSouthSketch, goOpenFireplace, useKnifeOnPortrait, readMessage, returnToSafalaanInBaseNoSketches), knife));
+
+		allSteps.add(new PanelDetails("Investigate the lab", Arrays.asList(useKnifeOnTapestry, useKeyOnStatue, goDownToLab, telegrabBook, bringSafalaanBook, bringMessageToVeliafToFinish), knife));
 
 		return allSteps;
 	}

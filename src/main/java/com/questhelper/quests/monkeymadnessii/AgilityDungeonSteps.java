@@ -26,28 +26,31 @@ package com.questhelper.quests.monkeymadnessii;
 
 import com.questhelper.Zone;
 import com.questhelper.questhelpers.QuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.ChatMessageRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.PrayerRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.DetailedOwnerStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ChatMessageCondition;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.Player;
+import net.runelite.api.Prayer;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameTick;
@@ -65,17 +68,19 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 
 	ItemRequirement bronzeKey;
 
-	ArrayList<WorldPoint> path1V1, path1V2, pathConnectingPath1V2ToV1, pathConnectingPath1V1ToV2, path2V1, path2V2, pathMaze, path3V1, path3V2, pathToChest,
+	Requirement protectFromRanged, protectFromMelee;
+
+	List<WorldPoint> path1V1, path1V2, pathConnectingPath1V2ToV1, pathConnectingPath1V1ToV2, path2V1, path2V2, pathMaze, path3V1, path3V2, pathToChest,
 		pathFromChest, pathToDoor, path4V1, path4V2, path5V1, path5V2, path5V3, firstHalfSection5Path, pathToShortcutV1, pathToShortcutV2, pathToKrukV1, pathToKrukV2;
 
 	Zone fallArea1, fallArea2, fallArea3, fallArea4, fallArea4P2, cavesSection2, cavesSection2P2, cavesSection3, cavesSection3P2, cavesSection4P1, cavesSection4P2,
 		cavesSection4P3, krukRoom;
 
-	ConditionForStep inCavesSection2, inCavesSection3, inCavesSection4, hasBronzeKey, inFallArea1, inFallArea2, inFallArea3, inFallArea4, inKrukRoom, openedShortcut;
+	Requirement inCavesSection2, inCavesSection3, inCavesSection4, hasBronzeKey, inFallArea1, inFallArea2, inFallArea3, inFallArea4, inKrukRoom, openedShortcut;
 
 	boolean shouldUsePath1V2, shouldUsePath2V2, shouldUsePath3V2, shouldUsePath4V2, shouldntUsePath5V1, shouldntUsePath5V2, shouldntUsePath5V3, shouldUsePath6V2;
 
-	ChatMessageCondition path1SouthIsWrongChat, path2NorthIsWrongChat, path2NorthIsWrongChat2, path3SouthIsWrongChat, path4NorthIsWrongChat, path5WestIsWrongChat,
+	ChatMessageRequirement path1SouthIsWrongChat, path2NorthIsWrongChat, path2NorthIsWrongChat2, path3SouthIsWrongChat, path4NorthIsWrongChat, path5WestIsWrongChat,
 		path5MiddleIsWrongChat, path5EastIsWrongChat, path5WestToMiddleWrongChat, path5MiddleToWestWrongChat, path5MiddleToEastWrongChat, path5EastToMiddleWrongChat,
 		path6WestIsWrongChat;
 	Conditions path1SouthIsWrong, path2NorthIsWrong, path3SouthIsWrong, path4NorthIsWrong, path5WestIsWrong, path5MiddleIsWrong, path5EastIsWrong, path6WestIsWrong;
@@ -94,6 +99,8 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 	public void setupItemRequirements()
 	{
 		bronzeKey = new ItemRequirement("Bronze key", ItemID.BRONZE_KEY_19566);
+		protectFromMelee = new PrayerRequirement("Protect from Melee", Prayer.PROTECT_FROM_MELEE);
+		protectFromRanged = new PrayerRequirement("Protect from Missiles", Prayer.PROTECT_FROM_MISSILES);
 	}
 
 	public void setupZones()
@@ -116,80 +123,80 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 
 	public void setupConditions()
 	{
-		inFallArea1 = new ZoneCondition(fallArea1);
-		inFallArea2 = new ZoneCondition(fallArea2);
-		inFallArea3 = new ZoneCondition(fallArea3);
-		inFallArea4 = new ZoneCondition(fallArea4, fallArea4P2);
-		inCavesSection2 = new ZoneCondition(cavesSection2, cavesSection2P2);
-		inCavesSection3 = new ZoneCondition(cavesSection3, cavesSection3P2);
-		inCavesSection4 = new ZoneCondition(cavesSection4P1, cavesSection4P2, cavesSection4P3);
-		inKrukRoom = new ZoneCondition(krukRoom);
+		inFallArea1 = new ZoneRequirement(fallArea1);
+		inFallArea2 = new ZoneRequirement(fallArea2);
+		inFallArea3 = new ZoneRequirement(fallArea3);
+		inFallArea4 = new ZoneRequirement(fallArea4, fallArea4P2);
+		inCavesSection2 = new ZoneRequirement(cavesSection2, cavesSection2P2);
+		inCavesSection3 = new ZoneRequirement(cavesSection3, cavesSection3P2);
+		inCavesSection4 = new ZoneRequirement(cavesSection4P1, cavesSection4P2, cavesSection4P3);
+		inKrukRoom = new ZoneRequirement(krukRoom);
 
-		hasBronzeKey = new ItemRequirementCondition(bronzeKey);
-		openedShortcut = new VarbitCondition(5029, 1);
+		hasBronzeKey = new ItemRequirements(bronzeKey);
+		openedShortcut = new VarbitRequirement(5029, 1);
 
-		path1SouthIsWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2512, 9141, 1), new WorldPoint(2515, 9135, 1))),
+		path1SouthIsWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2512, 9141, 1), new WorldPoint(2515, 9135, 1))),
 			"Something about this route feels wrong.");
 		path1SouthIsWrong = new Conditions(true, LogicType.OR, path1SouthIsWrongChat,
-			new ZoneCondition(new Zone(new WorldPoint(2511, 9147, 1), new WorldPoint(2527, 9159, 1))));
+			new ZoneRequirement(new Zone(new WorldPoint(2511, 9147, 1), new WorldPoint(2527, 9159, 1))));
 
-		path2NorthIsWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2527, 9169, 1), new WorldPoint(2529, 9171, 1))),
+		path2NorthIsWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2527, 9169, 1), new WorldPoint(2529, 9171, 1))),
 			"Something about this tunnel feels wrong.");
-		path2NorthIsWrongChat2 = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2548, 9154, 1), new WorldPoint(2550, 9156, 1))),
+		path2NorthIsWrongChat2 = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2548, 9154, 1), new WorldPoint(2550, 9156, 1))),
 			"Something about this route feels wrong.");
 		path2NorthIsWrong = new Conditions(true, LogicType.OR, path2NorthIsWrongChat, path2NorthIsWrongChat2,
-			new ZoneCondition(new Zone(new WorldPoint(2566, 9151, 1), new WorldPoint(2574, 9164, 1))));
+			new ZoneRequirement(new Zone(new WorldPoint(2566, 9151, 1), new WorldPoint(2574, 9164, 1))));
 
-		path3SouthIsWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2589, 9160, 1), new WorldPoint(2592, 9164, 1))),
+		path3SouthIsWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2589, 9160, 1), new WorldPoint(2592, 9164, 1))),
 			"Something about this route feels wrong.");
 		path3SouthIsWrong = new Conditions(true, LogicType.OR, path3SouthIsWrongChat,
-			new ZoneCondition(new Zone(new WorldPoint(2590, 9173, 1), new WorldPoint(2617, 9180, 1))));
+			new ZoneRequirement(new Zone(new WorldPoint(2590, 9173, 1), new WorldPoint(2617, 9180, 1))));
 
-		path4NorthIsWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2600, 9196, 1), new WorldPoint(2600, 9201, 1))),
-			"Something about this route feels wrong.");
-
-		path5WestIsWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2575, 9223, 1), new WorldPoint(2577, 9225, 1))),
+		path4NorthIsWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2600, 9196, 1), new WorldPoint(2600, 9201, 1))),
 			"Something about this route feels wrong.");
 
-		path5MiddleIsWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2586, 9226, 1), new WorldPoint(2588, 9228, 1))),
+		path5WestIsWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2575, 9223, 1), new WorldPoint(2577, 9225, 1))),
 			"Something about this route feels wrong.");
 
-		path5EastIsWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2601, 9228, 1), new WorldPoint(2603, 9230, 1))),
+		path5MiddleIsWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2586, 9226, 1), new WorldPoint(2588, 9228, 1))),
 			"Something about this route feels wrong.");
 
-		path5WestToMiddleWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2581, 9224, 1), new WorldPoint(2583, 9226, 1))),
+		path5EastIsWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2601, 9228, 1), new WorldPoint(2603, 9230, 1))),
 			"Something about this route feels wrong.");
-		path5MiddleToWestWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2584, 9223, 1), new WorldPoint(2586, 9224, 1))),
+
+		path5WestToMiddleWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2581, 9224, 1), new WorldPoint(2583, 9226, 1))),
 			"Something about this route feels wrong.");
-		path5MiddleToEastWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2588, 9221, 1), new WorldPoint(2592, 9222, 1))),
+		path5MiddleToWestWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2584, 9223, 1), new WorldPoint(2586, 9224, 1))),
 			"Something about this route feels wrong.");
-		path5EastToMiddleWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2595, 9221, 1), new WorldPoint(2598, 9221, 1))),
+		path5MiddleToEastWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2588, 9221, 1), new WorldPoint(2592, 9222, 1))),
+			"Something about this route feels wrong.");
+		path5EastToMiddleWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2595, 9221, 1), new WorldPoint(2598, 9221, 1))),
 			"Something about this route feels wrong.");
 
 		path4NorthIsWrong = new Conditions(true, LogicType.OR, path4NorthIsWrongChat, path5WestToMiddleWrongChat,
 			path5MiddleToEastWrongChat,
-			new ZoneCondition(new Zone(new WorldPoint(2565, 9189, 1), new WorldPoint(2596, 9213, 1))));
+			new ZoneRequirement(new Zone(new WorldPoint(2565, 9189, 1), new WorldPoint(2596, 9213, 1))));
 		path5WestIsWrong = new Conditions(LogicType.OR, path5WestIsWrongChat, path5MiddleToWestWrongChat, path5EastToMiddleWrongChat);
 		path5MiddleIsWrong = new Conditions(LogicType.OR, path5MiddleIsWrongChat, path5WestToMiddleWrongChat, path5EastToMiddleWrongChat);
 		path5EastIsWrong = new Conditions(LogicType.OR, path5EastIsWrongChat, path5MiddleToEastWrongChat, path5WestToMiddleWrongChat);
 
-		path6WestIsWrongChat = new ChatMessageCondition(
-			new ZoneCondition(new Zone(new WorldPoint(2550, 9258, 1), new WorldPoint(2552, 9258, 1))),
+		path6WestIsWrongChat = new ChatMessageRequirement(
+			new ZoneRequirement(new Zone(new WorldPoint(2550, 9258, 1), new WorldPoint(2552, 9258, 1))),
 			"Something about this route feels wrong.");
 		path6WestIsWrong = new Conditions(true, LogicType.OR, path6WestIsWrongChat,
-			new ZoneCondition(new Zone(new WorldPoint(2546, 9226, 1), new WorldPoint(2554, 9255, 1))));
+			new ZoneRequirement(new Zone(new WorldPoint(2546, 9226, 1), new WorldPoint(2554, 9255, 1))));
 	}
 
 	@Override
@@ -204,27 +211,38 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 		setupConditions();
 		setupPaths();
 
-		leaveFallArea1 = new ObjectStep(getQuestHelper(), ObjectID.ROPE_28775, new WorldPoint(2317, 9159, 1), "Go up the rope to the west.");
-		leaveFallArea2 = new ObjectStep(getQuestHelper(), ObjectID.ROPE_28775, new WorldPoint(2379, 9168, 1), "Go up the rope to the west.");
-		leaveFallArea3 = new ObjectStep(getQuestHelper(), ObjectID.ROPE_28775, new WorldPoint(2414, 9189, 1), "Climb up the rope to the south east and use Protect from Ranged.");
-		leaveFallArea4 = new ObjectStep(getQuestHelper(), ObjectID.ROPE_28775, new WorldPoint(2364, 9264, 1), "Climb up the rope to the north west and use Protect from Melee.");
+		leaveFallArea1 = new ObjectStep(getQuestHelper(), ObjectID.ROPE_28775, new WorldPoint(2317, 9159, 1),
+			"Go up the rope to the west.", protectFromMelee);
+		leaveFallArea2 = new ObjectStep(getQuestHelper(), ObjectID.ROPE_28775, new WorldPoint(2379, 9168, 1),
+			"Go up the rope to the west.", protectFromMelee);
+		leaveFallArea3 = new ObjectStep(getQuestHelper(), ObjectID.ROPE_28775, new WorldPoint(2414, 9189, 1),
+			"Climb up the rope to the south east and use Protect from Ranged.", protectFromRanged);
+		leaveFallArea4 = new ObjectStep(getQuestHelper(), ObjectID.ROPE_28775, new WorldPoint(2364, 9264, 1),
+			"Climb up the rope to the north west and use Protect from Melee.", protectFromMelee);
 
 		traverseDungeonFirstSection = new DetailedQuestStep(getQuestHelper(), "Traverse the next section of the dungeon. Protect from Melee if you fall.");
-		traverseDungeonThirdSection = new ObjectStep(getQuestHelper(), ObjectID.HOLE_28764, new WorldPoint(2595, 9266, 1), "Traverse the next section of the dungeon. Protect from Ranged if you fall.");
-		getKey = new ObjectStep(getQuestHelper(), ObjectID.CHEST_28792, new WorldPoint(2653, 9163, 1), "Right-click unlock the chest in the cavern to the east for a bronze key.");
+		traverseDungeonThirdSection = new ObjectStep(getQuestHelper(), ObjectID.HOLE_28764, new WorldPoint(2595, 9266, 1),
+			"Traverse the next section of the dungeon. PROTECT FROM MISSILE if you fall.");
+		getKey = new ObjectStep(getQuestHelper(), ObjectID.CHEST_28792, new WorldPoint(2653, 9163, 1),
+			"Right-click unlock the chest in the cavern to the east for a bronze key.");
 		((ObjectStep)(getKey)).addAlternateObjects(ObjectID.CHEST_28793);
 		getKey.setLinePoints(pathToChest);
 
-		openBronzeDoor = new ObjectStep(getQuestHelper(), ObjectID.BRONZE_DOOR, new WorldPoint(2610, 9195, 1), "Make your way north then through the bronze door.", bronzeKey);
+		openBronzeDoor = new ObjectStep(getQuestHelper(), ObjectID.BRONZE_DOOR, new WorldPoint(2610, 9195, 1),
+			"Make your way north then through the bronze door.", bronzeKey);
 		openBronzeDoor.setLinePoints(pathToDoor);
 
-		openShortcut = new ObjectStep(getQuestHelper(), NullObjectID.NULL_28814, new WorldPoint(2544, 9232, 1), "Continue through the dungeon until you reach a shortcut to open. Pray melee if you fall.");
+		openShortcut = new ObjectStep(getQuestHelper(), NullObjectID.NULL_28814, new WorldPoint(2544, 9232, 1),
+			"Continue through the dungeon until you reach a shortcut to open. PROTECT FROM MELEE if you fall.");
 
-		enterShortcut = new ObjectStep(getQuestHelper(), NullObjectID.NULL_28814, new WorldPoint(2515, 9173, 1), "Enter the shortcut near the entrance.");
-		goToKruk = new ObjectStep(getQuestHelper(), ObjectID.CAVERN_ENTRANCE, new WorldPoint(2531, 9227, 1), "Prepare to fight Kruk, then enter the hole to the south.");
+		enterShortcut = new ObjectStep(getQuestHelper(), NullObjectID.NULL_28814, new WorldPoint(2515, 9173, 1),
+			"Enter the shortcut near the entrance.");
+		goToKruk = new ObjectStep(getQuestHelper(), ObjectID.CAVERN_ENTRANCE, new WorldPoint(2531, 9227, 1),
+			"Prepare to fight Kruk, then enter the hole to the south.");
 		goToKruk.addSubSteps(enterShortcut);
 
-		fightKruk = new NpcStep(getQuestHelper(), NpcID.KRUK_6805, new WorldPoint(2535, 9213, 1), "Kill Kruk. He can be flinched on a corner in the room.");
+		fightKruk = new NpcStep(getQuestHelper(), NpcID.KRUK_6805, new WorldPoint(2535, 9213, 1),
+			"Kill Kruk. He can be flinched on a corner in the room.");
 	}
 
 	private void updateSection1Route()
@@ -334,7 +352,7 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 		}
 		for (int i = 0; i < currentNode.getPaths().length; i++)
 		{
-			if (currentNode.getPaths()[i] != null && !currentNode.getPaths()[i].getWrongWay().checkCondition(client) && !previousIds.contains(currentNode.getPaths()[i].getIdEnd()))
+			if (currentNode.getPaths()[i] != null && !currentNode.getPaths()[i].getWrongWay().check(client) && !previousIds.contains(currentNode.getPaths()[i].getIdEnd()))
 			{
 				nextNodeId = currentNode.getPaths()[i].getIdEnd();
 				newPoints.addAll(currentNode.getPaths()[i].getPath());
@@ -381,7 +399,7 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 	{
 		if (!shouldUsePath1V2)
 		{
-			shouldUsePath1V2 = path1SouthIsWrong.checkCondition(client);
+			shouldUsePath1V2 = path1SouthIsWrong.check(client);
 			if (shouldUsePath1V2)
 			{
 				updateSection1Route();
@@ -389,7 +407,7 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 		}
 		if (!shouldUsePath2V2)
 		{
-			shouldUsePath2V2 = path2NorthIsWrong.checkCondition(client);
+			shouldUsePath2V2 = path2NorthIsWrong.check(client);
 			if (shouldUsePath2V2)
 			{
 				updateSection1Route();
@@ -397,7 +415,7 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 		}
 		if (!shouldUsePath3V2)
 		{
-			shouldUsePath3V2 = path3SouthIsWrong.checkCondition(client);
+			shouldUsePath3V2 = path3SouthIsWrong.check(client);
 			if (shouldUsePath3V2)
 			{
 				updateSection1Route();
@@ -406,7 +424,7 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 
 		if (!shouldUsePath4V2)
 		{
-			shouldUsePath4V2 = path4NorthIsWrong.checkCondition(client);
+			shouldUsePath4V2 = path4NorthIsWrong.check(client);
 			if (shouldUsePath4V2)
 			{
 				updateSection2Route();
@@ -415,7 +433,7 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 
 		if (!shouldntUsePath5V1)
 		{
-			shouldntUsePath5V1 = path5EastIsWrong.checkCondition(client);
+			shouldntUsePath5V1 = path5EastIsWrong.check(client);
 			if (shouldntUsePath5V1)
 			{
 				updateSection2Route();
@@ -424,7 +442,7 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 
 		if (!shouldntUsePath5V2)
 		{
-			shouldntUsePath5V2 = path5MiddleIsWrong.checkCondition(client);
+			shouldntUsePath5V2 = path5MiddleIsWrong.check(client);
 			if (shouldntUsePath5V2)
 			{
 				updateSection2Route();
@@ -433,7 +451,7 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 
 		if (!shouldntUsePath5V3)
 		{
-			shouldntUsePath5V3 = path5WestIsWrong.checkCondition(client);
+			shouldntUsePath5V3 = path5WestIsWrong.check(client);
 			if (shouldntUsePath5V1)
 			{
 				updateSection2Route();
@@ -442,7 +460,7 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 
 		if (!shouldUsePath6V2)
 		{
-			shouldUsePath6V2 = path6WestIsWrong.checkCondition(client);
+			shouldUsePath6V2 = path6WestIsWrong.check(client);
 			if (shouldUsePath6V2)
 			{
 				updateSection3Route();
@@ -456,9 +474,9 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 	@Override
 	protected void updateSteps()
 	{
-		if (inCavesSection4.checkCondition(client))
+		if (inCavesSection4.check(client))
 		{
-			if (openedShortcut.checkCondition(client))
+			if (openedShortcut.check(client))
 			{
 				startUpStep(goToKruk);
 			}
@@ -467,21 +485,21 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 				startUpStep(openShortcut);
 			}
 		}
-		else if (inKrukRoom.checkCondition(client))
+		else if (inKrukRoom.check(client))
 		{
 			startUpStep(fightKruk);
 		}
-		else if (openedShortcut.checkCondition(client))
+		else if (openedShortcut.check(client))
 		{
 			startUpStep(enterShortcut);
 		}
-		else if (inCavesSection3.checkCondition(client))
+		else if (inCavesSection3.check(client))
 		{
 			startUpStep(traverseDungeonThirdSection);
 		}
-		else if (inCavesSection2.checkCondition(client))
+		else if (inCavesSection2.check(client))
 		{
-			if (hasBronzeKey.checkCondition(client))
+			if (hasBronzeKey.check(client))
 			{
 				startUpStep(openBronzeDoor);
 			}
@@ -490,19 +508,19 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 				startUpStep(getKey);
 			}
 		}
-		else if (inFallArea1.checkCondition(client))
+		else if (inFallArea1.check(client))
 		{
 			startUpStep(leaveFallArea1);
 		}
-		else if (inFallArea2.checkCondition(client))
+		else if (inFallArea2.check(client))
 		{
 			startUpStep(leaveFallArea2);
 		}
-		else if (inFallArea3.checkCondition(client))
+		else if (inFallArea3.check(client))
 		{
 			startUpStep(leaveFallArea3);
 		}
-		else if (inFallArea4.checkCondition(client))
+		else if (inFallArea4.check(client))
 		{
 			startUpStep(leaveFallArea4);
 		}
@@ -546,7 +564,7 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 
 	private void setupPaths()
 	{
-		path1V1 = new ArrayList<>(Arrays.asList(
+		path1V1 = Arrays.asList(
 			new WorldPoint(2509, 9169, 1),
 			new WorldPoint(2509, 9167, 1),
 			new WorldPoint(2507, 9164, 1),
@@ -570,9 +588,9 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 			new WorldPoint(2538, 9143, 1),
 			new WorldPoint(2543, 9148, 1),
 			new WorldPoint(2549, 9148, 1)
-		));
+		);
 
-		path1V2 = new ArrayList<>(Arrays.asList(
+		path1V2 = Arrays.asList(
 			new WorldPoint(2509, 9169, 1),
 			new WorldPoint(2509, 9167, 1),
 			new WorldPoint(2507, 9164, 1),
@@ -590,24 +608,24 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 			new WorldPoint(2525, 9155, 1),
 			new WorldPoint(2525, 9158, 1),
 			new WorldPoint(2528, 9165, 1)
-		));
+		);
 
-		pathConnectingPath1V2ToV1 = new ArrayList<>(Arrays.asList(
+		pathConnectingPath1V2ToV1 = Arrays.asList(
 			new WorldPoint(2549, 9152, 1),
 			new WorldPoint(2549, 9162, 1),
 			new WorldPoint(2539, 9166, 1),
 			new WorldPoint(2528, 9165, 1)
-		));
+		);
 
-		pathConnectingPath1V1ToV2 = new ArrayList<>(Arrays.asList(
+		pathConnectingPath1V1ToV2 = Arrays.asList(
 			new WorldPoint(2528, 9165, 1),
 			new WorldPoint(2539, 9166, 1),
 			new WorldPoint(2549, 9162, 1),
 			new WorldPoint(2549, 9152, 1)
-		));
+		);
 
 		// This goes north from the first bonfire
-		path2V1 = new ArrayList<>(Arrays.asList(
+		path2V1 = Arrays.asList(
 			new WorldPoint(2528, 9173, 1),
 			new WorldPoint(2534, 9173, 1),
 			new WorldPoint(2538, 9180, 1),
@@ -615,26 +633,26 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 			new WorldPoint(2552, 9184, 1),
 			new WorldPoint(2567, 9184, 1),
 			new WorldPoint(2567, 9178, 1)
-		));
+		);
 
-		path2V2 = new ArrayList<>(Arrays.asList(
+		path2V2 = Arrays.asList(
 			new WorldPoint(2557, 9152, 1),
 			new WorldPoint(2560, 9156, 1),
 			new WorldPoint(2567, 9156, 1),
 			new WorldPoint(2574, 9164, 1)
-		));
+		);
 
 
-		pathMaze = new ArrayList<>(Arrays.asList(
+		pathMaze = Arrays.asList(
 			new WorldPoint(2575, 9170, 1),
 			new WorldPoint(2577, 9170, 1),
 			new WorldPoint(2577, 9172, 1),
 			new WorldPoint(2581, 9172, 1),
 			new WorldPoint(2581, 9169, 1),
 			new WorldPoint(2584, 9169, 1)
-		));
+		);
 
-		path3V1 = new ArrayList<>(Arrays.asList(
+		path3V1 = Arrays.asList(
 			new WorldPoint(2589, 9162, 1),
 			new WorldPoint(2597, 9162, 1),
 			new WorldPoint(2602, 9162, 1),
@@ -648,9 +666,9 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 			new WorldPoint(2617, 9160, 1),
 			new WorldPoint(2622, 9160, 1),
 			new WorldPoint(2629, 9167, 1)
-		));
+		);
 
-		path3V2 = new ArrayList<>(Arrays.asList(
+		path3V2 = Arrays.asList(
 			new WorldPoint(2588, 9177, 1),
 			new WorldPoint(2593, 9177, 1),
 			new WorldPoint(2597, 9176, 1),
@@ -662,9 +680,9 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 			new WorldPoint(2625, 9172, 1),
 			new WorldPoint(2629, 9172, 1),
 			new WorldPoint(2629, 9167, 1)
-		));
+		);
 
-		pathToChest = new ArrayList<>(Arrays.asList(
+		pathToChest = Arrays.asList(
 			new WorldPoint(2629, 9167, 1),
 			new WorldPoint(2639, 9167, 1),
 			new WorldPoint(2639, 9163, 1),
@@ -673,16 +691,16 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 			new WorldPoint(2645, 9165, 1),
 			new WorldPoint(2645, 9163, 1),
 			new WorldPoint(2652, 9163, 1)
-		));
+		);
 
-		pathFromChest = new ArrayList<>(Arrays.asList(
+		pathFromChest = Arrays.asList(
 			new WorldPoint(2652, 9163, 1),
 			new WorldPoint(2639, 9163, 1),
 			new WorldPoint(2639, 9167, 1),
 			new WorldPoint(2629, 9167, 1)
-		));
+		);
 
-		pathToDoor = new ArrayList<>(Arrays.asList(
+		pathToDoor = Arrays.asList(
 			new WorldPoint(2652, 9163, 1),
 			new WorldPoint(2645, 9163, 1),
 			new WorldPoint(2645, 9165, 1),
@@ -712,9 +730,9 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 			new WorldPoint(2615, 9188, 1),
 			new WorldPoint(2615, 9195, 1),
 			new WorldPoint(2611, 9195, 1)
-		));
+		);
 
-		path4V1 = new ArrayList<>(Arrays.asList(
+		path4V1 = Arrays.asList(
 			new WorldPoint(2607, 9195, 1),
 			new WorldPoint(2600, 9195, 1),
 			new WorldPoint(2600, 9205, 1),
@@ -728,9 +746,9 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 			new WorldPoint(2598, 9215, 1),
 			new WorldPoint(2599, 9216, 1),
 			new WorldPoint(2599, 9221, 1)
-		));
+		);
 
-		path4V2 = new ArrayList<>(Arrays.asList(
+		path4V2 = Arrays.asList(
 			new WorldPoint(2607, 9195, 1),
 			new WorldPoint(2600, 9195, 1),
 			new WorldPoint(2595, 9195, 1),
@@ -746,24 +764,24 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 			new WorldPoint(2571, 9211, 1),
 			new WorldPoint(2571, 9220, 1),
 			new WorldPoint(2576, 9222, 1)
-		));
+		);
 
-		path5V1 = new ArrayList<>(Arrays.asList(
+		path5V1 = Arrays.asList(
 			new WorldPoint(2599, 9221, 1),
 			new WorldPoint(2604, 9228, 1),
 			new WorldPoint(2604, 9230, 1),
 			new WorldPoint(2602, 9230, 1),
 			new WorldPoint(2602, 9232, 1)
-		));
+		);
 
-		path5V2 = new ArrayList<>(Arrays.asList(
+		path5V2 = Arrays.asList(
 			new WorldPoint(2587, 9223, 1),
 			new WorldPoint(2587, 9231, 1),
 			new WorldPoint(2591, 9235, 1),
 			new WorldPoint(2591, 9237, 1)
-		));
+		);
 
-		path5V3 = new ArrayList<>(Arrays.asList(
+		path5V3 = Arrays.asList(
 			new WorldPoint(2576, 9222, 1),
 			new WorldPoint(2576, 9225, 1),
 			new WorldPoint(2577, 9225, 1),
@@ -778,13 +796,13 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 			new WorldPoint(2569, 9234, 1),
 			new WorldPoint(2571, 9234, 1),
 			new WorldPoint(2571, 9239, 1)
-		));
+		);
 
-		firstHalfSection5Path = new ArrayList<>(Arrays.asList(
+		firstHalfSection5Path = Arrays.asList(
 			new WorldPoint(2593, 9273, 1),
 			new WorldPoint(2570, 9273, 1),
 			new WorldPoint(2554, 9258, 1)
-		));
+		);
 
 		pathToShortcutV1 = new ArrayList<>();
 		pathToShortcutV1.addAll(firstHalfSection5Path);
@@ -876,7 +894,7 @@ public class AgilityDungeonSteps extends DetailedOwnerStep
 			openShortcut, goToKruk, enterShortcut, fightKruk);
 	}
 
-	public Collection<QuestStep> getDisplaySteps()
+	public List<QuestStep> getDisplaySteps()
 	{
 		return Arrays.asList(traverseDungeonFirstSection, getKey, openBronzeDoor, traverseDungeonThirdSection, openShortcut, goToKruk, fightKruk);
 	}

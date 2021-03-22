@@ -30,22 +30,23 @@ import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
 import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
-import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
 
@@ -54,15 +55,18 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class JunglePotion extends BasicQuestHelper
 {
-	private QuestStep startQuest, finishQuest;
-	private ObjectStep getSnakeWeed, getArdrigal, getSitoFoil, getVolenciaMoss, enterCave, getRoguePurseHerb;
-	private ConditionalStep cleanAndReturnSnakeWeed, cleanAndReturnArdrigal, cleanAndReturnSitoFoil, cleanAndReturnVolenciaMoss,
-		getRoguesPurse, cleanAndReturnRoguesPurse;
-	private ItemRequirement grimySnakeWeed, snakeWeed, grimyArdrigal, ardrigal, grimySitoFoil, sitoFoil, grimyVolenciaMoss, volenciaMoss,
+	//Items Required
+	ItemRequirement grimySnakeWeed, snakeWeed, grimyArdrigal, ardrigal, grimySitoFoil, sitoFoil, grimyVolenciaMoss, volenciaMoss,
 		roguesPurse, grimyRoguesPurse;
 
-	private ZoneCondition isUnderground;
+	QuestStep startQuest, finishQuest;
 
+	ObjectStep getSnakeWeed, getArdrigal, getSitoFoil, getVolenciaMoss, enterCave, getRoguePurseHerb;
+
+	ConditionalStep cleanAndReturnSnakeWeed, cleanAndReturnArdrigal, cleanAndReturnSitoFoil, cleanAndReturnVolenciaMoss,
+		getRoguesPurse, cleanAndReturnRoguesPurse;
+
+	ZoneRequirement isUnderground;
 
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
@@ -100,7 +104,7 @@ public class JunglePotion extends BasicQuestHelper
 		//2824,9462,0
 		//2883, 9533, 0
 		Zone undergroundZone = new Zone(new WorldPoint(2824, 9462, 0), new WorldPoint(2883, 9533, 0));
-		isUnderground = new ZoneCondition(undergroundZone);
+		isUnderground = new ZoneRequirement(undergroundZone);
 	}
 
 	private Map<Integer, QuestStep> getSteps()
@@ -165,7 +169,7 @@ public class JunglePotion extends BasicQuestHelper
 		DetailedQuestStep cleanGrimyHerb = new DetailedQuestStep(this, "", grimyHerb);
 
 		ConditionalStep cleanAndReturnHerb = new ConditionalStep(this, cleanGrimyHerb, "Clean and return the " + herbName + " to Trufitus.");
-		cleanAndReturnHerb.addStep(new ItemRequirementCondition(cleanHerb), returnHerb);
+		cleanAndReturnHerb.addStep(new ItemRequirements(cleanHerb), returnHerb);
 		return cleanAndReturnHerb;
 	}
 
@@ -204,7 +208,9 @@ public class JunglePotion extends BasicQuestHelper
 		enterCave = new ObjectStep(this, ObjectID.ROCKS_2584, new WorldPoint(2825, 3119, 0),
 			"Enter the cave to the north by clicking on the rocks.");
 		enterCave.addDialogStep("Yes, I'll enter the cave.");
-		getRoguePurseHerb = new ObjectStep(this, 2583, "Get the Rogues Purse from the fungus covered wall in the underground dungeon.");
+		getRoguePurseHerb = new ObjectStep(this, ObjectID.FUNGUS_COVERED_CAVERN_WALL, "Get the Rogues Purse from the fungus covered " +
+			"wall in the underground dungeon.");
+		getRoguePurseHerb.setHideWorldArrow(true);
 		getRoguePurseHerb.addText("If you are planning on doing Zogre Flesh Eaters then take an extra.");
 
 		getRoguesPurse = new ConditionalStep(this, enterCave);
@@ -226,50 +232,56 @@ public class JunglePotion extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Surive against level 53 Jogres and level 46 Harpie Bug Swarms.");
 		return reqs;
 	}
 
+	//Recommended
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
-		reqs.add(new ItemRequirement("Food", -1));
+		ItemRequirement food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
+
+		reqs.add(food);
 		reqs.add(new ItemRequirement("Antipoison", ItemCollections.getAntipoisons()));
-		reqs.add(new ItemRequirement("Teleport to Karamja (Glory/house teleport)", -1));
+		ItemRequirement karaTele = new ItemRequirement("Teleport to Karamja (Glory/house teleport)",
+			ItemID.BRIMHAVEN_TELEPORT);
+		karaTele.addAlternates(ItemCollections.getAmuletOfGlories());
+		reqs.add(karaTele);
 		return reqs;
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> steps = new ArrayList<>();
+		List<PanelDetails> steps = new ArrayList<>();
 
 		PanelDetails startingPanel = new PanelDetails("Starting quest",
-			new ArrayList<>(Arrays.asList(startQuest)));
+			Collections.singletonList(startQuest));
 		steps.add(startingPanel);
 
 		PanelDetails snakeWeedPanel = new PanelDetails("Snake Weed",
-			new ArrayList<>(Arrays.asList(getSnakeWeed, cleanAndReturnSnakeWeed)));
+			Arrays.asList(getSnakeWeed, cleanAndReturnSnakeWeed));
 		steps.add(snakeWeedPanel);
 
 		PanelDetails ardrigalPanel = new PanelDetails("Ardrigal",
-			new ArrayList<>(Arrays.asList(getArdrigal, cleanAndReturnArdrigal)));
+			Arrays.asList(getArdrigal, cleanAndReturnArdrigal));
 		steps.add(ardrigalPanel);
 
 		PanelDetails sitoFoilpanel = new PanelDetails("Sito Foil",
-			new ArrayList<>(Arrays.asList(getSitoFoil, cleanAndReturnSitoFoil)));
+			Arrays.asList(getSitoFoil, cleanAndReturnSitoFoil));
 		steps.add(sitoFoilpanel);
 
 		PanelDetails volcaniaMossPanel = new PanelDetails("Volcania Moss",
-			new ArrayList<>(Arrays.asList(getVolenciaMoss, cleanAndReturnVolenciaMoss)));
+			Arrays.asList(getVolenciaMoss, cleanAndReturnVolenciaMoss));
 		steps.add(volcaniaMossPanel);
 
 		PanelDetails roguesPursePanel = new PanelDetails("Rogues Purse",
-			new ArrayList<>(Arrays.asList(enterCave, getRoguePurseHerb, cleanAndReturnRoguesPurse)));
+			Arrays.asList(enterCave, getRoguePurseHerb, cleanAndReturnRoguesPurse));
 		steps.add(roguesPursePanel);
 
 		return steps;

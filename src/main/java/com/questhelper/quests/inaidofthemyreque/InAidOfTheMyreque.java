@@ -25,36 +25,40 @@
 package com.questhelper.quests.inaidofthemyreque;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.player.InInstanceRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
 import com.questhelper.requirements.Requirement;
-import com.questhelper.requirements.Spellbook;
-import com.questhelper.requirements.SpellbookRequirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.player.SpellbookRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.Operation;
+import com.questhelper.requirements.util.Spellbook;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.InInstanceCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -62,17 +66,19 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class InAidOfTheMyreque extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement food, spade, bucketTo5, pickaxe, hammer, planks11, nails44, swampPaste, rawMackerelOrSnail10, bronzeAxes10, tinderboxes4, steelBars2,
 		coal, softClay, rope, silverBar, mithrilBar, sapphire, cosmicRune, waterRune, efaritaysAidOrSilverWeapon, bucketOrSemiFilledBucket, tinderbox,
 		steelBars2Highlighted, coalHiglighted, tinderboxHighlighted, planks3, planks2, planks6, nails12, nails8, crate, tinderbox3, snails10, mackerel10,
 		nails24, planks5, nails20, templeLibraryKey, sleepingSeven, hammerHighlighted, mould, silvRod, softClayHighlighted, enchantedRod, rodOfIvandis,
-		enchantedRodHighlighted;
+		enchantedRodHighlighted, foodForChest;
+
+	//Items Recommended
+	ItemRequirement steelmedChainLegsSickle, morttonTeleport, canifisTeleport;
 
 	Requirement normalSpellbook;
 
-	ItemRequirement steelmedChainLegsSickle, morttonTeleport, canifisTeleport;
-
-	ConditionForStep onEntranceIsland, inCaves, inMyrequeCave, inBoatArea, inNewBase, onRoof, filledCrate, addedCoal, litFurnace, talkedToGadderanks, talkedToJuvinates,
+	Requirement onEntranceIsland, inCaves, inMyrequeCave, inBoatArea, inNewBase, onRoof, filledCrate, addedCoal, litFurnace, talkedToGadderanks, talkedToJuvinates,
 		talkedToWiskit, inGadderanksFight, defeatedGadderanks, veliafReturnedToBase, inTempleTrekArea, inTempleTrekArea2, inTemple, libraryOpen, hasBook, inTempleLibrary,
 		inCoffinRoom, hasEnchatedRod, hasRod, hasMould, boardsRemoved;
 
@@ -95,6 +101,7 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 
 	ConditionalStep startQuest, travelToBurgh, returnToHideout, goTalkToPolmafi, travelWithIvan, goIntoCavesAgain, goBlessRod, finishQuest;
 
+	//Zones
 	Zone entranceIsland, caves, myrequeCave, boatArea, newBase, roof, gadderanksFightArea, templeTrekArea, templeTrekArea2, temple, templeLibrary, coffinRoom;
 
 	@Override
@@ -215,7 +222,9 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 
 	public void setupItemRequirements()
 	{
-		food = new ItemRequirement("Any food", -1, -1);
+		food = new ItemRequirement("Any food", ItemCollections.getGoodEatingFood(), -1);
+		foodForChest = new ItemRequirement("Food to put in a chest, multiple pieces in case a Ghast eats some",
+			ItemCollections.getGoodEatingFood(),-1);
 		spade = new ItemRequirement("Spade", ItemID.SPADE);
 		bucketTo5 = new ItemRequirement("buckets (Can use 1 but is much slower)", ItemID.BUCKET, 5);
 		bucketOrSemiFilledBucket = new ItemRequirement("Bucket", ItemID.BUCKET);
@@ -225,10 +234,13 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 		planks11 = new ItemRequirement("Plank", ItemID.PLANK, 11);
 		nails44 = new ItemRequirement("Any nails", ItemCollections.getNails(), 44);
 		swampPaste = new ItemRequirement("Swamp paste", ItemID.SWAMP_PASTE);
-		rawMackerelOrSnail10 = new ItemRequirement("10 Raw mackerel or raw snail meat (random for each player)", -1, -1);
 		snails10 = new ItemRequirement("Raw snail", ItemID.THIN_SNAIL_MEAT);
 		snails10.addAlternates(ItemID.FAT_SNAIL_MEAT, ItemID.LEAN_SNAIL_MEAT);
 		mackerel10 = new ItemRequirement("Raw mackerel", ItemID.RAW_MACKEREL, 10);
+		rawMackerelOrSnail10 = new ItemRequirements("10 Raw mackerel or raw snail meat (random for each player)",
+			mackerel10,
+			snails10);
+
 		bronzeAxes10 = new ItemRequirement("Bronze axe", ItemID.BRONZE_AXE, 10);
 		tinderboxes4 = new ItemRequirement("Tinderbox", ItemID.TINDERBOX, 4);
 		tinderbox3 = new ItemRequirement("Tinderbox", ItemID.TINDERBOX, 3);
@@ -244,7 +256,7 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 		coalHiglighted.setHighlightInInventory(true);
 
 		efaritaysAidOrSilverWeapon = new ItemRequirement("Silver weapon, blessed axe or Efaritay's Aid to damage vampyres", ItemID.SILVER_SICKLE);
-		efaritaysAidOrSilverWeapon.addAlternates(ItemID.SILVER_SICKLE_B, ItemID.EFARITAYS_AID);
+		efaritaysAidOrSilverWeapon.addAlternates(ItemID.SILVER_SICKLE_B, ItemID.EFARITAYS_AID, ItemID.WOLFBANE);
 
 		softClay = new ItemRequirement("Soft clay", ItemID.SOFT_CLAY);
 		rope = new ItemRequirement("Rope", ItemID.ROPE);
@@ -254,7 +266,12 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 		cosmicRune = new ItemRequirement("Cosmic rune", ItemID.COSMIC_RUNE);
 		waterRune = new ItemRequirement("Water rune", ItemID.WATER_RUNE);
 
-		steelmedChainLegsSickle = new ItemRequirement("Steel med helm/chainbody/plate legs and a sickle for Ivan", -1, -1);
+		steelmedChainLegsSickle = new ItemRequirements("Steel med helm/chainbody/plate legs and a sickle for Ivan",
+			new ItemRequirement("Steel med helm", ItemID.STEEL_MED_HELM),
+			new ItemRequirement("Steel chainbody", ItemID.STEEL_CHAINBODY),
+			new ItemRequirement("Steel Platelegs", ItemID.STEEL_PLATELEGS),
+			new ItemRequirement("Silver sickle", ItemID.SILVER_SICKLE));
+
 		morttonTeleport = new ItemRequirement("Teleports to Mort'ton (minigame tele, teleport scroll)", ItemID.MORTTON_TELEPORT);
 		canifisTeleport = new ItemRequirement("Canifis teleports (ancients spell, nearby fairy ring bip)", ItemID.KHARYRLL_TELEPORT);
 
@@ -268,11 +285,11 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 		nails24 = new ItemRequirement("Nails", ItemCollections.getNails(), 24);
 
 		crate = new ItemRequirement("Crate", ItemID.CRATE);
-		crate.setTip("You can get another by asking Aurel what you should do now");
+		crate.setTooltip("You can get another by asking Aurel what you should do now");
 
 		templeLibraryKey = new ItemRequirement("Temple library key", ItemID.TEMPLE_LIBRARY_KEY);
 		templeLibraryKey.setHighlightInInventory(true);
-		templeLibraryKey.setTip("You can get another from Drezel");
+		templeLibraryKey.setTooltip("You can get another from Drezel");
 
 		sleepingSeven = new ItemRequirement("The sleeping seven", ItemID.THE_SLEEPING_SEVEN);
 		sleepingSeven.setHighlightInInventory(true);
@@ -290,9 +307,7 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 		enchantedRodHighlighted = new ItemRequirement("Silvthrill rod", ItemID.SILVTHRILL_ROD_7638);
 		enchantedRodHighlighted.setHighlightInInventory(true);
 
-		rodOfIvandis = new ItemRequirement("Rod of Ivandis", ItemID.ROD_OF_IVANDIS_10);
-		rodOfIvandis.addAlternates(ItemID.ROD_OF_IVANDIS_1, ItemID.ROD_OF_IVANDIS_2, ItemID.ROD_OF_IVANDIS_3, ItemID.ROD_OF_IVANDIS_4, ItemID.ROD_OF_IVANDIS_5,
-			ItemID.ROD_OF_IVANDIS_6, ItemID.ROD_OF_IVANDIS_7, ItemID.ROD_OF_IVANDIS_8, ItemID.ROD_OF_IVANDIS_9);
+		rodOfIvandis = new ItemRequirement("Rod of Ivandis", ItemCollections.getRodOfIvandis());
 
 		normalSpellbook = new SpellbookRequirement(Spellbook.NORMAL);
 	}
@@ -315,18 +330,18 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		onEntranceIsland = new ZoneCondition(entranceIsland);
-		inCaves = new ZoneCondition(caves);
-		inMyrequeCave = new ZoneCondition(myrequeCave);
-		inBoatArea = new ZoneCondition(boatArea);
-		inNewBase = new ZoneCondition(newBase);
-		onRoof = new ZoneCondition(roof);
-		inGadderanksFight = new Conditions(new ZoneCondition(gadderanksFightArea), new InInstanceCondition());
-		inTempleTrekArea = new ZoneCondition(templeTrekArea);
-		inTempleTrekArea2 = new ZoneCondition(templeTrekArea2);
-		inTemple = new ZoneCondition(temple);
-		inTempleLibrary = new ZoneCondition(templeLibrary);
-		inCoffinRoom = new ZoneCondition(coffinRoom);
+		onEntranceIsland = new ZoneRequirement(entranceIsland);
+		inCaves = new ZoneRequirement(caves);
+		inMyrequeCave = new ZoneRequirement(myrequeCave);
+		inBoatArea = new ZoneRequirement(boatArea);
+		inNewBase = new ZoneRequirement(newBase);
+		onRoof = new ZoneRequirement(roof);
+		inGadderanksFight = new Conditions(new ZoneRequirement(gadderanksFightArea), new InInstanceRequirement());
+		inTempleTrekArea = new ZoneRequirement(templeTrekArea);
+		inTempleTrekArea2 = new ZoneRequirement(templeTrekArea2);
+		inTemple = new ZoneRequirement(temple);
+		inTempleLibrary = new ZoneRequirement(templeLibrary);
+		inCoffinRoom = new ZoneRequirement(coffinRoom);
 
 		// 1969 0>1>2>3 Florin throwing food
 
@@ -348,28 +363,28 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 
 		// 1979, Cornelius is banker
 
-		filledCrate = new VarbitCondition(1994, 938);
-		addedCoal = new VarbitCondition(1980, 2);
-		litFurnace = new VarbitCondition(1980, 3);
+		filledCrate = new VarbitRequirement(1994, 938);
+		addedCoal = new VarbitRequirement(1980, 2);
+		litFurnace = new VarbitRequirement(1980, 3);
 
-		talkedToGadderanks = new VarbitCondition(1995, 1);
-		talkedToJuvinates = new VarbitCondition(1997, 1);
-		talkedToWiskit = new VarbitCondition(1996, 1);
+		talkedToGadderanks = new VarbitRequirement(1995, 1);
+		talkedToJuvinates = new VarbitRequirement(1997, 1);
+		talkedToWiskit = new VarbitRequirement(1996, 1);
 
-		defeatedGadderanks = new VarbitCondition(1999, 3);
-		veliafReturnedToBase = new VarbitCondition(1981, 3, Operation.GREATER_EQUAL);
+		defeatedGadderanks = new VarbitRequirement(1999, 3);
+		veliafReturnedToBase = new VarbitRequirement(1981, 3, Operation.GREATER_EQUAL);
 
 		// 2001 = 1, travelling with ivan
 		// 2003 = 1, Ivan has silver sickle
 		// 2005 0-10 for food
 
-		libraryOpen = new VarbitCondition(1982, 1);
+		libraryOpen = new VarbitRequirement(1982, 1);
 
-		hasBook = new ItemRequirementCondition(sleepingSeven);
-		hasEnchatedRod = new ItemRequirementCondition(enchantedRod);
-		hasRod = new ItemRequirementCondition(silvRod);
-		hasMould = new ItemRequirementCondition(mould);
-		boardsRemoved = new VarbitCondition(1983, 1);
+		hasBook = new ItemRequirements(sleepingSeven);
+		hasEnchatedRod = new ItemRequirements(enchantedRod);
+		hasRod = new ItemRequirements(silvRod);
+		hasMould = new ItemRequirements(mould);
+		boardsRemoved = new VarbitRequirement(1983, 1);
 
 		// 1981 1->2 when talked to Gadderanks
 
@@ -438,7 +453,7 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 		lightFurnace.addDialogStep("Yes.");
 		talkToGadderanks = new NpcStep(this, NpcID.GADDERANKS, new WorldPoint(3515, 3241, 0), "Talk to Gadderanks in the shop.");
 		talkToJuvinate = new NpcStep(this, NpcID.VAMPYRE_JUVINATE_4482, new WorldPoint(3515, 3241, 0), "Talk to a juvinate in the shop.");
-		talkToWiskit = new NpcStep(this, NpcID.VAMPYRE_JUVINATE_4482, new WorldPoint(3515, 3241, 0), "Talk to Wiskit in the shop. Be prepared to fight the vampyres and Gadderanks.", efaritaysAidOrSilverWeapon);
+		talkToWiskit = new NpcStep(this, NpcID.WISKIT, new WorldPoint(3515, 3241, 0), "Talk to Wiskit in the shop. Be prepared to fight the vampyres and Gadderanks.", efaritaysAidOrSilverWeapon);
 		killGadderanksAndJuvinates = new NpcStep(this, NpcID.GADDERANKS_4484, new WorldPoint(3515, 3241, 0), "Defeat Gadderanks and the juvinates.", true, efaritaysAidOrSilverWeapon);
 		((NpcStep) (killGadderanksAndJuvinates)).addAlternateNpcs(NpcID.VAMPYRE_JUVINATE_4486, NpcID.VAMPYRE_JUVINATE_4487);
 		talkToGadderanksAgain = new NpcStep(this, NpcID.GADDERANKS_4485, new WorldPoint(3515, 3241, 0), "Talk to Gadderanks.");
@@ -451,7 +466,7 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 		killJuvinates = new NpcStep(this, NpcID.VAMPYRE_JUVINATE_4443, new WorldPoint(2859, 4564, 0), "Kill the juvenates.", true, efaritaysAidOrSilverWeapon);
 		killJuvinates2 = new NpcStep(this, NpcID.VAMPYRE_JUVINATE_4442, new WorldPoint(2839, 4589, 0), "Kill the juvenates.", true, efaritaysAidOrSilverWeapon);
 		goDownToDrezel = new ObjectStep(this, ObjectID.TRAPDOOR_3432, new WorldPoint(3422, 3485, 0), "Talk to Drezel under the Paterdomus Temple.");
-		((ObjectStep)(goDownToDrezel)).addAlternateObjects(ObjectID.TRAPDOOR_3433);
+		((ObjectStep) (goDownToDrezel)).addAlternateObjects(ObjectID.TRAPDOOR_3433);
 		talkToDrezel = new NpcStep(this, NpcID.DREZEL, new WorldPoint(3439, 9896, 0), "Talk to Drezel under the Paterdomus Temple.");
 		talkToDrezel.addDialogSteps("Veliaf told me about Ivandis.", "Is there somewhere that I might get more information on Ivandis?",
 			"The lives of those pitiful few left in Morytania could rest on this!");
@@ -464,7 +479,7 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 		useHammerOnBoards = new ObjectStep(this, NullObjectID.NULL_12772, new WorldPoint(3483, 9832, 0), "Use a hammer on the boarded up cave.", hammerHighlighted);
 		useHammerOnBoards.addDialogStep("Yes.");
 		useHammerOnBoards.addIcon(ItemID.HAMMER);
-		enterCoffinRoom =  new ObjectStep(this, ObjectID.CAVE_ENTRANCE_12770, new WorldPoint(3484, 9832, 0), "Enter the cave.");
+		enterCoffinRoom = new ObjectStep(this, ObjectID.CAVE_ENTRANCE_12770, new WorldPoint(3484, 9832, 0), "Enter the cave.");
 
 		useClayOnCoffin = new ObjectStep(this, ObjectID.COFFIN_12802, new WorldPoint(3511, 9864, 0), "Use a piece of soft clay on the coffin.", softClayHighlighted);
 		useClayOnCoffin.addIcon(ItemID.SOFT_CLAY);
@@ -490,7 +505,7 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 		travelToBurgh.addStep(inMyrequeCave, leaveMyrequeCave);
 		travelToBurgh.addStep(inCaves, leaveCavesIntoSwamp);
 
-		returnToHideout = new ConditionalStep(this, goToHollowBase, "Return the Myreque Hideout under the Canifis Pub and talk to Veliaf there.");
+		returnToHideout = new ConditionalStep(this, goToHollowBase, "Return the Myreque Hideout under the Canifis Pub and talk to Veliaf there. Bank any followers before going.");
 		returnToHideout.addStep(inMyrequeCave, talkToVeliafInHideoutAgain);
 
 		goTalkToPolmafi = new ConditionalStep(this, goToHollowBase, "Talk to Polmafi in the Myreque Hideout.");
@@ -513,48 +528,62 @@ public class InAidOfTheMyreque extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(food, spade, bucketTo5, pickaxe, hammer, planks11, nails44, swampPaste, rawMackerelOrSnail10, bronzeAxes10, tinderboxes4, steelBars2,
-			coal, efaritaysAidOrSilverWeapon, softClay, rope, silverBar, mithrilBar, sapphire, cosmicRune, waterRune));
+		return Arrays.asList(foodForChest, spade, bucketTo5, pickaxe, hammer, planks11, nails44, swampPaste,
+			rawMackerelOrSnail10, bronzeAxes10, tinderboxes4, steelBars2, coal, efaritaysAidOrSilverWeapon,
+			softClay, rope, silverBar, mithrilBar, sapphire, cosmicRune, waterRune);
 	}
 
 	@Override
-	public ArrayList<Requirement> getGeneralRequirements()
+	public List<Requirement> getGeneralRecommended()
 	{
-		return new ArrayList<>(Collections.singletonList(normalSpellbook));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(normalSpellbook);
+		return req;
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<Requirement> getGeneralRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(steelmedChainLegsSickle, morttonTeleport, canifisTeleport));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.IN_SEARCH_OF_THE_MYREQUE, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.CRAFTING, 25));
+		req.add(new SkillRequirement(Skill.MINING, 15));
+		req.add(new SkillRequirement(Skill.MAGIC, 7));
+		return req;
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList("Gadderanks (level 35)", "Vampyre Juvenites (levels 50-75)"));
+		return Arrays.asList(steelmedChainLegsSickle, morttonTeleport, canifisTeleport);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<String> getCombatRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Finding a new base", new ArrayList<>(Arrays.asList(startQuest, travelToBurgh, putFoodInChest, talkToRazvan, clearTrapdoorRubble,
-			enterBurghPubBasement, clearBasementRubble))));
+		return Arrays.asList("Gadderanks (level 35)", "Vampyre Juvenites (levels 50-75)");
+	}
 
-		allSteps.add(new PanelDetails("Repairing the shop", new ArrayList<>(Arrays.asList(talkToAurel, climbShopLadder, fixRoof, climbDownShopLadder, fixShopWall, talkToAurelForCrate)), hammer, planks6, nails24));
-		allSteps.add(new PanelDetails("Stocking the shop", new ArrayList<>(Collections.singletonList(fillCrate)), tinderbox3, bronzeAxes10, rawMackerelOrSnail10));
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Finding a new base", Arrays.asList(startQuest, travelToBurgh, putFoodInChest, talkToRazvan, clearTrapdoorRubble,
+			enterBurghPubBasement, clearBasementRubble), foodForChest, pickaxe, bucketTo5, spade));
 
-		allSteps.add(new PanelDetails("Repairing the bank", new ArrayList<>(Arrays.asList(talkToAurelWithCrate, repairBooth, repairBankWall, talkToCornelius)), hammer, planks5, nails20, swampPaste));
-		allSteps.add(new PanelDetails("Repairing the furnace", new ArrayList<>(Arrays.asList(talkToRazvanAfterRepairs, repairFurnace, addCoalToFurnace, lightFurnace)), hammer, steelBars2, coal, tinderbox));
-		allSteps.add(new PanelDetails("Defending Burgh de Rott", new ArrayList<>(Arrays.asList(talkToGadderanks, talkToJuvinate, talkToWiskit, killGadderanksAndJuvinates, talkToGadderanksAgain, talkToVeliafAfterFight)), efaritaysAidOrSilverWeapon));
+		allSteps.add(new PanelDetails("Repairing the shop", Arrays.asList(talkToAurel, climbShopLadder, fixRoof, climbDownShopLadder, fixShopWall, talkToAurelForCrate), hammer, planks6, nails24));
+		allSteps.add(new PanelDetails("Stocking the shop", Collections.singletonList(fillCrate), tinderbox3, bronzeAxes10, rawMackerelOrSnail10));
 
-		allSteps.add(new PanelDetails("Relocating", new ArrayList<>(Arrays.asList(returnToHideout, goTalkToPolmafi, travelWithIvan)), efaritaysAidOrSilverWeapon));
+		allSteps.add(new PanelDetails("Repairing the bank", Arrays.asList(talkToAurelWithCrate, repairBooth, repairBankWall, talkToCornelius), hammer, planks5, nails20, swampPaste));
+		allSteps.add(new PanelDetails("Repairing the furnace", Arrays.asList(talkToRazvanAfterRepairs, repairFurnace, addCoalToFurnace, lightFurnace), hammer, steelBars2, coal, tinderbox));
+		allSteps.add(new PanelDetails("Defending Burgh de Rott", Arrays.asList(talkToGadderanks, talkToJuvinate, talkToWiskit, killGadderanksAndJuvinates, talkToGadderanksAgain, talkToVeliafAfterFight), efaritaysAidOrSilverWeapon));
 
-		allSteps.add(new PanelDetails("Ivandis' legacy", new ArrayList<>(Arrays.asList(talkToDrezel, useKeyOnHole, enterLibrary, searchBookcase, readBook, goIntoCavesAgain, useHammerOnBoards, enterCoffinRoom,
-			useClayOnCoffin, makeRod, enchantRod, goBlessRod, finishQuest)), hammer, softClay, mithrilBar, silverBar, cosmicRune, waterRune, rope));
+		allSteps.add(new PanelDetails("Relocating", Arrays.asList(returnToHideout, goTalkToPolmafi, travelWithIvan), efaritaysAidOrSilverWeapon));
+
+		allSteps.add(new PanelDetails("Ivandis' legacy", Arrays.asList(talkToDrezel, useKeyOnHole, enterLibrary, searchBookcase, readBook, goIntoCavesAgain, useHammerOnBoards, enterCoffinRoom,
+			useClayOnCoffin, makeRod, enchantRod, goBlessRod, finishQuest), hammer, softClay, mithrilBar, silverBar, cosmicRune, waterRune, rope, sapphire));
 
 		return allSteps;
 	}

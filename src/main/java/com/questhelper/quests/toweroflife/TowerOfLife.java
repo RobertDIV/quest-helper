@@ -29,24 +29,42 @@ import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.steps.*;
-import com.questhelper.steps.conditional.*;
+import com.questhelper.requirements.player.FreeInventorySlotRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.steps.ConditionalStep;
+import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.ItemStep;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.PuzzleStep;
+import com.questhelper.steps.QuestStep;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import net.runelite.api.InventoryID;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-
-import java.util.*;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.TOWER_OF_LIFE
 )
 public class TowerOfLife extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement
-		rawSwordfish, rawChicken,
 		beer, gloves, hammer, saw, //Pre-requirements
 		buildersHat, buildersShirt, buildersTrousers, buildersBoots,
 		buildersHatEquipped, buildersShirtEquipped, buildersTrousersEquipped, buildersBootsEquipped,
@@ -54,22 +72,15 @@ public class TowerOfLife extends BasicQuestHelper
 		pipeMachinePipes, pipeMachineRings, pipeMachineRivets,
 		cageMetalBar, cageBindingFluid;
 
-	ConditionForStep
+	//Items Recommended
+	ItemRequirement rawSwordfish, rawChicken;
+
+	Requirement
 		hasBeer, hasGloves,
 		hasBuildersHat, hasSpokenToNoFingers, hasBuildersShirt, hasBuildersTrousers, hasBuildersBoots,
 		hasPressureMachineSheets, hasPressureMachineBalls, hasPressureMachineWheels, isPressureMachineBuilt, isPressureMachineFixed,
 		hasPipeMachinePipes, hasPipeMachineRings, hasPipeMachineRivets, isPipeMachineBuilt, isPipeMachineFixed,
 		hasCageMetalBars, hasCageBindingFluid, isCageBuilt, isCageFixed, isTowerFixed;
-
-	Zone
-		towerBasement,
-		tower1, tower2, tower3, tower4,
-		tower11, tower12, tower13, tower14,
-		tower21, tower22, tower23, tower24,
-		tower31, tower32, tower33, tower34,
-		tower41, tower42, tower43, tower44;
-	ZoneCondition
-		inTower, inTowerBasement, inTowerGround, inTowerFloor1, inTowerFloor2, inTowerFloor3;
 
 	QuestStep
 		talkToEffigy, talkToBonafido,
@@ -85,7 +96,18 @@ public class TowerOfLife extends BasicQuestHelper
 	ConditionalStep
 		getBuildersOutfit, fixTheTower, fixPressureMachine, fixPipeMachine, fixCage, followTheAlchemists, confrontEffigy, confrontTheHomunculus, scareTheAlchemists, talkToHomunculusInDungeon;
 
+	//Zones
+	Zone
+			towerBasement,
+			tower1, tower2, tower3, tower4,
+			tower11, tower12, tower13, tower14,
+			tower21, tower22, tower23, tower24,
+			tower31, tower32, tower33, tower34,
+			tower41, tower42, tower43, tower44;
 
+	ZoneRequirement
+			inTower, inTowerBasement, inTowerGround, inTowerFloor1, inTowerFloor2, inTowerFloor3;
+	
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
 	{
@@ -183,41 +205,41 @@ public class TowerOfLife extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasBeer = new ItemRequirementCondition(beer);
-		hasGloves = new ItemRequirementCondition(gloves);
-		hasBuildersHat = new ItemRequirementCondition(buildersHat);
-		hasBuildersShirt = new ItemRequirementCondition(buildersShirt);
-		hasBuildersTrousers = new ItemRequirementCondition(buildersTrousers);
-		hasBuildersBoots = new ItemRequirementCondition(buildersBoots);
+		hasBeer = new ItemRequirements(beer);
+		hasGloves = new ItemRequirements(gloves);
+		hasBuildersHat = new ItemRequirements(buildersHat);
+		hasBuildersShirt = new ItemRequirements(buildersShirt);
+		hasBuildersTrousers = new ItemRequirements(buildersTrousers);
+		hasBuildersBoots = new ItemRequirements(buildersBoots);
 
-		hasPressureMachineBalls = new ItemRequirementCondition(pressureMachineBalls);
-		hasPressureMachineSheets = new ItemRequirementCondition(pressureMachineSheets);
-		hasPressureMachineWheels = new ItemRequirementCondition(pressureMachineWheels);
+		hasPressureMachineBalls = new ItemRequirements(pressureMachineBalls);
+		hasPressureMachineSheets = new ItemRequirements(pressureMachineSheets);
+		hasPressureMachineWheels = new ItemRequirements(pressureMachineWheels);
 
-		hasPipeMachinePipes = new ItemRequirementCondition(pipeMachinePipes);
-		hasPipeMachineRings = new ItemRequirementCondition(pipeMachineRings);
-		hasPipeMachineRivets = new ItemRequirementCondition(pipeMachineRivets);
+		hasPipeMachinePipes = new ItemRequirements(pipeMachinePipes);
+		hasPipeMachineRings = new ItemRequirements(pipeMachineRings);
+		hasPipeMachineRivets = new ItemRequirements(pipeMachineRivets);
 
-		hasCageMetalBars = new ItemRequirementCondition(cageMetalBar);
-		hasCageBindingFluid = new ItemRequirementCondition(cageBindingFluid);
+		hasCageMetalBars = new ItemRequirements(cageMetalBar);
+		hasCageBindingFluid = new ItemRequirements(cageBindingFluid);
 
-		inTower = new ZoneCondition(tower1, tower2, tower3, tower4);
-		inTowerBasement = new ZoneCondition(towerBasement);
-		inTowerGround = new ZoneCondition(tower11, tower12, tower13, tower14);
-		inTowerFloor1 = new ZoneCondition(tower21, tower22, tower23, tower24);
-		inTowerFloor2 = new ZoneCondition(tower31, tower32, tower33, tower34);
-		inTowerFloor3 = new ZoneCondition(tower41, tower42, tower43, tower44);
+		inTower = new ZoneRequirement(tower1, tower2, tower3, tower4);
+		inTowerBasement = new ZoneRequirement(towerBasement);
+		inTowerGround = new ZoneRequirement(tower11, tower12, tower13, tower14);
+		inTowerFloor1 = new ZoneRequirement(tower21, tower22, tower23, tower24);
+		inTowerFloor2 = new ZoneRequirement(tower31, tower32, tower33, tower34);
+		inTowerFloor3 = new ZoneRequirement(tower41, tower42, tower43, tower44);
 
-		isPressureMachineBuilt = new VarbitCondition(3338, 1);
-		isPressureMachineFixed = new VarbitCondition(3338, 2);
+		isPressureMachineBuilt = new VarbitRequirement(3338, 1);
+		isPressureMachineFixed = new VarbitRequirement(3338, 2);
 
-		isPipeMachineBuilt = new VarbitCondition(3339, 1);
-		isPipeMachineFixed = new VarbitCondition(3339, 2);
+		isPipeMachineBuilt = new VarbitRequirement(3339, 1);
+		isPipeMachineFixed = new VarbitRequirement(3339, 2);
 
-		isCageBuilt = new VarbitCondition(3340, 1);
-		isCageFixed = new VarbitCondition(3340, 2);
+		isCageBuilt = new VarbitRequirement(3340, 1);
+		isCageFixed = new VarbitRequirement(3340, 2);
 
-		isTowerFixed = new VarbitCondition(3354, 1);
+		isTowerFixed = new VarbitRequirement(3354, 1);
 	}
 
 	public void setupSteps()
@@ -387,7 +409,7 @@ public class TowerOfLife extends BasicQuestHelper
 
 		talkToNoFingers = new NpcStep(this, NpcID.NO_FINGERS, new WorldPoint(2645, 3224, 0), "Talk to 'No fingers'");
 		pickpocketNoFingers = new NpcStep(this, NpcID.NO_FINGERS, new WorldPoint(2645, 3224, 0), "Pickpocket 'No fingers'", gloves);
-		hasSpokenToNoFingers = new VarbitCondition(3376, 1);
+		hasSpokenToNoFingers = new VarbitRequirement(3376, 1);
 		ConditionalStep getBoots = new ConditionalStep(this, talkToNoFingers); // "Get the Builder's Boots from 'No fingers'"
 		getBoots.addStep(hasSpokenToNoFingers, pickpocketNoFingers);
 
@@ -415,46 +437,52 @@ public class TowerOfLife extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(beer, gloves, hammer, saw));
+		return Arrays.asList(beer, gloves, hammer, saw);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(rawSwordfish, rawChicken));
+		return Arrays.asList(rawSwordfish, rawChicken);
 	}
 
 	@Override
-	public ArrayList<String> getNotes()
+	public List<Requirement> getGeneralRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("You will need at least 11 free inventory slots (15 if not wearing the builders costume)"));
+		return Collections.singletonList(new SkillRequirement(Skill.CONSTRUCTION, 10));
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRecommended()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		return Collections.singletonList(new FreeInventorySlotRequirement(InventoryID.INVENTORY, 11));
+	}
 
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToEffigy, talkToBonafido))));
-		PanelDetails getBuildersOutfitPanel = new PanelDetails("Get the Builders' outfit", new ArrayList<>(Arrays.asList(
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToEffigy, talkToBonafido), saw, hammer, beer,
+			gloves));
+		PanelDetails getBuildersOutfitPanel = new PanelDetails("Get the Builders' outfit", Arrays.asList(
 			talkToBlackeye, //Get hat
 			talkToNoFingers, pickpocketNoFingers, //Get Boots
 			getBeerForGuns, talkToGuns, //Get shirt
 			getTrousers,
 			talkToBonafidoWithOutfit
-		)), beer, gloves);
+		), beer, gloves);
 		getBuildersOutfitPanel.setLockingStep(getBuildersOutfit);
 		allSteps.add(getBuildersOutfitPanel);
 
 
 		allSteps.add(new PanelDetails("Fix the tower",
-			enterTower,
+			Arrays.asList(enterTower,
 			buildPressureMachine, solvePressureMachinePuzzle,
 			buildPipeMachine, solvePipeMachinePuzzle,
-			buildCage, solveCagePuzzle
-		));
+			buildCage, solveCagePuzzle), saw, hammer));
 
 		allSteps.add(new PanelDetails("The Alchemists' Secret", talkToEffigyAgain, followTheAlchemists, confrontEffigy, confrontTheHomunculus, scareTheAlchemists, talkToHomunculusInDungeon));
 

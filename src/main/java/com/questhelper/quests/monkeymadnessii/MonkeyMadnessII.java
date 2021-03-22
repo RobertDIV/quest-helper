@@ -25,42 +25,47 @@
 package com.questhelper.quests.monkeymadnessii;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
-import com.questhelper.requirements.FollowerRequirement;
-import com.questhelper.requirements.ItemRequirements;
+import com.questhelper.QuestVarbits;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.questhelpers.QuestUtil;
+import com.questhelper.requirements.ChatMessageRequirement;
+import com.questhelper.requirements.npc.FollowerRequirement;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.npc.NpcInteractingRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
 import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.WidgetTextRequirement;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.ChatMessageCondition;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.FollowerCondition;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
+import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
@@ -69,11 +74,16 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class MonkeyMadnessII extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement lemon, grape, pestle, pickaxe, logs, lightSource, hammerSidebar, hammer, chisel, chiselSidebar, mspeakAmulet, talisman, ninjaGreegree, translationBook,
 		pestleHighlighted, lemonHighlighted, grapesHighlighted, handkerchief, mysteriousNote, mysteriousNoteLemon, mysteriousNoteLemonCandle, brush, scrawledNote, grapeBrush,
 		translatedNote, noCombatItems, talismanOr1000Coins, ninjaGreegreeEquipped, mspeakAmuletEquipped, greegree, kruksPaw, greegreeEquipped, krukGreegree, coins20,
-		chiselHighlighted, deconstructedOnyx, chargedOnyx, combatGear2, magicLog, food, staminaPotions, prayerPotions, antidote, combatGear;
+		chiselHighlighted, deconstructedOnyx, chargedOnyx;
 
+	//Items Recommended
+	ItemRequirement combatGear, combatGear2, magicLog, food, staminaPotions, prayerPotions, antidote;
+
+	//Other Requirements
 	Requirement nieveFollower;
 
 	QuestStep talkToNarnode;
@@ -97,17 +107,18 @@ public class MonkeyMadnessII extends BasicQuestHelper
 	QuestStep talkToNarnodeAfterLab, talkToNieve, killGorillasInStronghold, enterNorthOfTree, enterStrongholdCave, killTorturedAndDemonic, enterNorthOfTreeNoNieve, fightGlough, talkToZooknockToFinish,
 		talkToNarnodeToFinish;
 
-	Zone gloughHouseF1, gloughHouseF2, gloughHouseF3, anitaHouse, caves, subCaves, zooknockDungeon, strongholdFloor2, lab, pastMonkeyBars, northOfTree, crashSiteCavern;
-
-	ConditionForStep inGloughHouse, inGloughHouseF1, inGloughHouseF2, inGloughHouseF3, inAnitaHouse, inCaves, inZooknockDungeon, inStrongholdFloor2, inLab,
+	Requirement inGloughHouse, inGloughHouseF1, inGloughHouseF2, inGloughHouseF3, inAnitaHouse, inCaves, inZooknockDungeon, inStrongholdFloor2, inLab,
 		isPastMonkeyBars, isNorthOfTree, inCrashSiteCavern, gorillaNotOnHoldingArea, hasChiselAndHammer;
 
-	ConditionForStep foundHandkerchief, talkedToAnita, openedCupboard, foundNote, hasBrush, hasNote, hasLemonNote, hasLemonCandleNote, hasScrawledNote, hasGrapeBrush, triedTranslating,
+	Requirement foundHandkerchief, talkedToAnita, openedCupboard, foundNote, hasBrush, hasNote, hasLemonNote, hasLemonCandleNote, hasScrawledNote, hasGrapeBrush, triedTranslating,
 		greegreeNearby, krukCorpseNearby, hasKruksPaw, kob2Nearby, keef2Nearby, defeatedKob, defeatedKeef, smithNearby, smithInLocation1, smithInLocation2, smithInLocation3, smithInLocation4,
 		hasChargedOnyx, hasDeconstructedOnyx, killedGorillas, nieveFollowing;
 
 	ConditionalStep goToGlough2ndFloor, goInvestigateGloughHouse, leaveGloughHouse, goTalkToAnita, goToGlough3rdFloor, goInvestigateUpstairs, goShowNoteToNarnode, goTalkToAnitaWithNote,
 		bringTranslationToNarnode;
+
+	//Zones
+	Zone gloughHouseF1, gloughHouseF2, gloughHouseF3, anitaHouse, caves, subCaves, zooknockDungeon, strongholdFloor2, lab, pastMonkeyBars, northOfTree, crashSiteCavern;
 
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
@@ -174,7 +185,7 @@ public class MonkeyMadnessII extends BasicQuestHelper
 
 		ConditionalStep goTalkToSmith = new ConditionalStep(this, findSmith);
 		goTalkToSmith.addStep(smithNearby, talkToSmith);
-	//	goTalkToSmith.addStep(smithInLocation4, goUpTo4);
+		//	goTalkToSmith.addStep(smithInLocation4, goUpTo4);
 		steps.put(66, goTalkToSmith);
 
 		steps.put(70, talkToGarkorAfterSmith);
@@ -261,7 +272,7 @@ public class MonkeyMadnessII extends BasicQuestHelper
 		mspeakAmuletEquipped = new ItemRequirement("M'speak amulet", ItemID.MSPEAK_AMULET, 1, true);
 
 		talisman = new ItemRequirement("Monkey talisman", ItemID.MONKEY_TALISMAN);
-		talisman.setTip("You can buy one from the Ape Atoll magic shop for 1000 coins");
+		talisman.setTooltip("You can buy one from the Ape Atoll magic shop for 1000 coins");
 		talismanOr1000Coins = new ItemRequirements(LogicType.OR, "Monkey talisman or 1000 coins", talisman, new ItemRequirement("1000 coins", ItemID.COINS_995, 1000));
 		ninjaGreegree = new ItemRequirement("Ninja greegree", ItemID.NINJA_MONKEY_GREEGREE);
 		ninjaGreegree.addAlternates(ItemID.NINJA_MONKEY_GREEGREE_4025);
@@ -270,14 +281,15 @@ public class MonkeyMadnessII extends BasicQuestHelper
 		ninjaGreegreeEquipped.addAlternates(ItemID.NINJA_MONKEY_GREEGREE_4025);
 		translationBook = new ItemRequirement("Translation book", ItemID.TRANSLATION_BOOK);
 		translationBook.setHighlightInInventory(true);
-		translationBook.setTip("You can get another from Narnode if you've lost it");
+		translationBook.setTooltip("If it's not in your bank you can get another from Narnode during the quest");
 
 		magicLog = new ItemRequirement("Magic logs", ItemID.MAGIC_LOGS);
-		food = new ItemRequirement("Food", -1, -1);
-		staminaPotions = new ItemRequirement("Stamina potions", -1, -1);
-		prayerPotions = new ItemRequirement("Prayer potions", -1, -1);
-		antidote = new ItemRequirement("Antidote", -1, -1);
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
+		staminaPotions = new ItemRequirement("Stamina potions", ItemCollections.getStaminaPotions(), -1);
+		prayerPotions = new ItemRequirement("Prayer potions", ItemCollections.getPrayerPotions(), -1);
+		antidote = new ItemRequirement("Antidote", ItemCollections.getAntipoisons(), -1);
 		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 
 		handkerchief = new ItemRequirement("Handkerchief", ItemID.HANDKERCHIEF);
 		mysteriousNote = new ItemRequirement("Mysterious note", ItemID.MYSTERIOUS_NOTE);
@@ -295,11 +307,11 @@ public class MonkeyMadnessII extends BasicQuestHelper
 		grapeBrush.setHighlightInInventory(true);
 
 		scrawledNote = new ItemRequirement("Scrawled note", ItemID.SCRAWLED_NOTE_19511);
-		scrawledNote.setTip("If you've lost it you'll need to go through the process of revealing the text again");
+		scrawledNote.setTooltip("If you've lost it you'll need to go through the process of revealing the text again");
 		scrawledNote.setHighlightInInventory(true);
 
 		translatedNote = new ItemRequirement("Translated note", ItemID.TRANSLATED_NOTE);
-		translatedNote.setTip("You can get another from Anita");
+		translatedNote.setTooltip("You can get another from Anita");
 		translatedNote.setHighlightInInventory(true);
 
 		noCombatItems = new ItemRequirement("No combat items to travel to Entrana", -1, -1);
@@ -308,10 +320,10 @@ public class MonkeyMadnessII extends BasicQuestHelper
 		greegreeEquipped = new ItemRequirement("Any greegree", ItemCollections.getGreegrees(), 1, true);
 
 		kruksPaw = new ItemRequirement("Kruk's paw", ItemID.KRUKS_PAW);
-		kruksPaw.setTip("You can get another from where you fought Kruk");
+		kruksPaw.setTooltip("You can get another from where you fought Kruk");
 
 		krukGreegree = new ItemRequirement("Kruk monkey greegree", ItemID.KRUK_MONKEY_GREEGREE, 1, true);
-		krukGreegree.setTip("If you've lost this you can get another from Zooknock");
+		krukGreegree.setTooltip("If you've lost this you can get another from Zooknock");
 
 		coins20 = new ItemRequirement("Coins", ItemID.COINS_995, 20);
 
@@ -323,6 +335,7 @@ public class MonkeyMadnessII extends BasicQuestHelper
 		chargedOnyx.setHighlightInInventory(true);
 
 		combatGear2 = new ItemRequirement("2 styles of combat gear", -1, -1);
+		combatGear2.setDisplayItemId(ItemID.BOWSWORD);
 
 		nieveFollower = new FollowerRequirement("Nieve", NpcID.NIEVE_7109);
 	}
@@ -333,61 +346,61 @@ public class MonkeyMadnessII extends BasicQuestHelper
 		// Started quest:
 		// 5039 0->1
 		// 5032 1->0
-		inGloughHouse = new ZoneCondition(gloughHouseF1, gloughHouseF2, gloughHouseF3);
-		inGloughHouseF1 = new ZoneCondition(gloughHouseF1);
-		inGloughHouseF2 = new ZoneCondition(gloughHouseF2);
-		inGloughHouseF3 = new ZoneCondition(gloughHouseF3);
-		inAnitaHouse = new ZoneCondition(anitaHouse);
-		inCaves = new ZoneCondition(caves, subCaves);
-		inZooknockDungeon = new ZoneCondition(zooknockDungeon);
-		inStrongholdFloor2 = new ZoneCondition(strongholdFloor2);
-		inLab = new ZoneCondition(lab);
-		isPastMonkeyBars = new ZoneCondition(pastMonkeyBars);
-		isNorthOfTree = new ZoneCondition(northOfTree);
-		inCrashSiteCavern = new ZoneCondition(crashSiteCavern);
+		inGloughHouse = new ZoneRequirement(gloughHouseF1, gloughHouseF2, gloughHouseF3);
+		inGloughHouseF1 = new ZoneRequirement(gloughHouseF1);
+		inGloughHouseF2 = new ZoneRequirement(gloughHouseF2);
+		inGloughHouseF3 = new ZoneRequirement(gloughHouseF3);
+		inAnitaHouse = new ZoneRequirement(anitaHouse);
+		inCaves = new ZoneRequirement(caves, subCaves);
+		inZooknockDungeon = new ZoneRequirement(zooknockDungeon);
+		inStrongholdFloor2 = new ZoneRequirement(strongholdFloor2);
+		inLab = new ZoneRequirement(lab);
+		isPastMonkeyBars = new ZoneRequirement(pastMonkeyBars);
+		isNorthOfTree = new ZoneRequirement(northOfTree);
+		inCrashSiteCavern = new ZoneRequirement(crashSiteCavern);
 
 		// 5039 1->2 when removing handkerchief search option
-		foundHandkerchief = new Conditions(LogicType.OR, new VarbitCondition(5039, 2, Operation.GREATER_EQUAL), new ItemRequirementCondition(handkerchief));
-		talkedToAnita = new VarbitCondition(5030, 1, Operation.GREATER_EQUAL);
-		openedCupboard = new Conditions(true, LogicType.OR, new WidgetTextCondition(229, 1, "You turn the statue and hear a clicking sound in the room."), new ChatMessageCondition("You have already activated the statue."));
-		foundNote = new VarbitCondition(5028, 1);
-		hasBrush = new Conditions(LogicType.OR, new ItemRequirementCondition(grapeBrush), new ItemRequirementCondition(brush));
-		hasGrapeBrush = new ItemRequirementCondition(grapeBrush);
-		hasNote = new ItemRequirementCondition(mysteriousNote);
-		hasLemonNote = new ItemRequirementCondition(mysteriousNoteLemon);
-		hasLemonCandleNote = new ItemRequirementCondition(mysteriousNoteLemonCandle);
-		hasScrawledNote = new ItemRequirementCondition(scrawledNote);
+		foundHandkerchief = new Conditions(LogicType.OR, new VarbitRequirement(5039, 2, Operation.GREATER_EQUAL), new ItemRequirements(handkerchief));
+		talkedToAnita = new VarbitRequirement(5030, 1, Operation.GREATER_EQUAL);
+		openedCupboard = new Conditions(true, LogicType.OR, new WidgetTextRequirement(229, 1, "You turn the statue and hear a clicking sound in the room."), new ChatMessageRequirement("You have already activated the statue."));
+		foundNote = new VarbitRequirement(5028, 1);
+		hasBrush = new Conditions(LogicType.OR, new ItemRequirements(grapeBrush), new ItemRequirements(brush));
+		hasGrapeBrush = new ItemRequirements(grapeBrush);
+		hasNote = new ItemRequirements(mysteriousNote);
+		hasLemonNote = new ItemRequirements(mysteriousNoteLemon);
+		hasLemonCandleNote = new ItemRequirements(mysteriousNoteLemonCandle);
+		hasScrawledNote = new ItemRequirements(scrawledNote);
 
 		// Read note:
 		// 5027 5->6
 		// 5031 0->1
 
 		triedTranslating = new Conditions(true,
-			new WidgetTextCondition(229, 1, "Some of the ancient Gnome phrases found on the note are missing<br>from the translation book. I should tell the King."));
+			new WidgetTextRequirement(229, 1, "Some of the ancient Gnome phrases found on the note are missing<br>from the translation book. I should tell the King."));
 
-		greegreeNearby = new ItemCondition(greegree);
+		greegreeNearby = new ItemOnTileRequirement(greegree);
 		krukCorpseNearby = new ObjectCondition(NullObjectID.NULL_28811);
-		hasKruksPaw = new ItemRequirementCondition(kruksPaw);
+		hasKruksPaw = new ItemRequirements(kruksPaw);
 
 		kob2Nearby = new NpcCondition(NpcID.KOB_7107);
 		keef2Nearby = new NpcCondition(NpcID.KEEF_7105);
-		defeatedKob = new VarbitCondition(5035, 1);
-		defeatedKeef = new VarbitCondition(5034, 1);
+		defeatedKob = new VarbitRequirement(5035, 1);
+		defeatedKeef = new VarbitRequirement(5034, 1);
 
 		// Killed Kruk, 5036 0->2
 
-		smithInLocation1 = new VarbitCondition(5040, 1); // TODO: Get location
-		smithInLocation2 = new VarbitCondition(5040, 2); // TODO: Get location
-		smithInLocation3 = new VarbitCondition(5040, 3); // TODO: Get location
-		smithInLocation4 = new VarbitCondition(5040, 4); // Smith near rune store
+		smithInLocation1 = new VarbitRequirement(5040, 1); // TODO: Get location
+		smithInLocation2 = new VarbitRequirement(5040, 2); // TODO: Get location
+		smithInLocation3 = new VarbitRequirement(5040, 3); // TODO: Get location
+		smithInLocation4 = new VarbitRequirement(5040, 4); // Smith near rune store
 
 		smithNearby = new NpcCondition(NpcID.ASSISTANT_LE_SMITH_6806);
 
 		gorillaNotOnHoldingArea = new Conditions(LogicType.NOR, new NpcCondition(NpcID.STUNTED_DEMONIC_GORILLA));
 
-		hasChiselAndHammer = new Conditions(new ItemRequirementCondition(hammer), new ItemRequirementCondition(chisel));
-		hasChargedOnyx = new ItemRequirementCondition(chargedOnyx);
-		hasDeconstructedOnyx = new ItemRequirementCondition(deconstructedOnyx);
+		hasChiselAndHammer = new Conditions(new ItemRequirements(hammer), new ItemRequirements(chisel));
+		hasChargedOnyx = new ItemRequirements(chargedOnyx);
+		hasDeconstructedOnyx = new ItemRequirements(deconstructedOnyx);
 
 		// Nieve leaves:
 		// 5037 0->1 (Steve appears)
@@ -399,9 +412,9 @@ public class MonkeyMadnessII extends BasicQuestHelper
 		// 5068 0->1
 		// 5069 1->2
 
-		killedGorillas = new VarbitCondition(5068, 3);
+		killedGorillas = new VarbitRequirement(5068, 3);
 
-		nieveFollowing = new FollowerCondition(NpcID.NIEVE_7109);
+		nieveFollowing = new NpcInteractingRequirement(NpcID.NIEVE_7109);
 	}
 
 	public void loadZones()
@@ -483,7 +496,7 @@ public class MonkeyMadnessII extends BasicQuestHelper
 		leaveKrukDungeon = new ObjectStep(this, ObjectID.ROPE_28775, new WorldPoint(2513, 9207, 1), "Leave the dungeon up the rope to the west.");
 		goDownToZooknock = new ObjectStep(this, ObjectID.BAMBOO_LADDER_4780, new WorldPoint(2763, 2703, 0), "Enter the dungeon in south Ape Atoll.", greegreeEquipped, kruksPaw, talisman);
 
-		ArrayList<WorldPoint> zooknockDungeonPath = new ArrayList<>(Arrays.asList(
+		List<WorldPoint> zooknockDungeonPath = Arrays.asList(
 			new WorldPoint(2768, 9101, 0),
 			new WorldPoint(2788, 9102, 0),
 			new WorldPoint(2788, 9109, 0),
@@ -515,7 +528,7 @@ public class MonkeyMadnessII extends BasicQuestHelper
 			new WorldPoint(2750, 9142, 0),
 			new WorldPoint(2773, 9144, 0),
 			new WorldPoint(2799, 9138, 0)
-		));
+		);
 		talkToZooknock = new NpcStep(this, NpcID.ZOOKNOCK_7170, new WorldPoint(2805, 9143, 0), "Talk to Zooknock in the north east of the dungeon.", greegreeEquipped, kruksPaw, talisman);
 		talkToZooknock.addDialogStep("Talk about your mission.");
 		((NpcStep) (talkToZooknock)).setLinePoints(zooknockDungeonPath);
@@ -528,12 +541,11 @@ public class MonkeyMadnessII extends BasicQuestHelper
 		enterTrollStronghold = new ObjectStep(this, ObjectID.STRONGHOLD, new WorldPoint(2839, 3690, 0), "Enter the Troll Stronghold, ready to fight Kob.");
 
 		talkToKob = new NpcStep(this, NpcID.KOB, new WorldPoint(2831, 10060, 2), "Talk to Kob with Protect from Melee on, ready to fight..");
-		talkToKob.addDialogSteps("I know about your deal with the monkeys.", "I offer to spare your life.", "I accept your challenge.");
 		talkToKob.setWorldMapPoint(new WorldPoint(2962, 10120, 0));
+		talkToKob.addDialogSteps("I know about your deal with the monkeys.", "You won't be around to crush anyone when I'm done with you.", "I accept your challenge.");
 
 		fightKob = new NpcStep(this, NpcID.KOB_7107, new WorldPoint(2831, 10060, 2), "Fight Kob. He can be safespotted from the doorway.");
 		fightKob.setWorldMapPoint(new WorldPoint(2962, 10120, 0));
-		fightKob.addDialogSteps("I know about your deal with the monkeys.", "You won't be around to crush anyone when I'm done with you.", "I accept your challenge.");
 
 		if (client.getBoostedSkillLevel(Skill.AGILITY) >= 70)
 		{
@@ -542,13 +554,13 @@ public class MonkeyMadnessII extends BasicQuestHelper
 		else
 		{
 			talkToKeef = new NpcStep(this, NpcID.KEEF, new WorldPoint(2542, 3031, 0), "Talk to Keef in Gu'Tanoth. Be prepared to fight him and pray Protect from Melee.", coins20);
-
 		}
+		talkToKeef.addDialogSteps("I know about your deal with the monkeys.", "I offer to spare your life.", "I accept your challenge.");
 
 		fightKeef = new NpcStep(this, NpcID.KEEF_7105, new WorldPoint(2542, 3031, 0), "Fight Keef. He can be safespotted.");
 		talkToGarkorAfterKeef = new NpcStep(this, NpcID.GARKOR_7158, new WorldPoint(2807, 2762, 0), "Talk to Garkor on Ape Atoll.", krukGreegree);
-		findSmith = new DetailedQuestStep(this, "Search around the various rooftops in Ape Atoll for Assistant le Smith.", krukGreegree);
-		talkToSmith = new NpcStep(this, NpcID.ASSISTANT_LE_SMITH_6806, "Talk to Assistant le Smith.", krukGreegree);
+		findSmith = new DetailedQuestStep(this, "Search around the various rooftops in Ape Atoll for Assistant Le Smith.", krukGreegree);
+		talkToSmith = new NpcStep(this, NpcID.ASSISTANT_LE_SMITH_6806, "Talk to Assistant Le Smith.", krukGreegree);
 		talkToSmith.addDialogSteps("I was going to ask you the same question.", "Why is that?", "Awowogei has already informed me about the battleships.", "Where is the fleet, currently?");
 		talkToGarkorAfterSmith = new NpcStep(this, NpcID.GARKOR_7158, new WorldPoint(2807, 2762, 0), "Talk to Garkor.", krukGreegree);
 		talkToMonkeyGuard = new NpcStep(this, NpcID.MONKEY_GUARD_6811, new WorldPoint(2694, 2784, 0), "Talk to the monkey guard on the north west of Ape Atoll.", krukGreegree, mspeakAmuletEquipped);
@@ -584,21 +596,21 @@ public class MonkeyMadnessII extends BasicQuestHelper
 		enterNorthOfTree = new ObjectStep(this, NullObjectID.NULL_28807, new WorldPoint(2435, 3520, 0), "Enter the breach north west of the Grand Tree with Nieve.", combatGear2, food, prayerPotions);
 		enterNorthOfTree.addDialogStep("Yes, let's go.");
 		enterStrongholdCave = new ObjectStep(this, ObjectID.CAVERN_ENTRANCE_28686, new WorldPoint(2027, 5613, 0), "Enter the cavern to the north east.");
-	    killTorturedAndDemonic = new NpcStep(this, NpcID.TORTURED_GORILLA_7150, new WorldPoint(2129, 5682, 0), "Talk to Glough in the north of the cavern. After, defeat the tortured and demonic gorillas.", true, combatGear2);
+		killTorturedAndDemonic = new NpcStep(this, NpcID.TORTURED_GORILLA_7150, new WorldPoint(2129, 5682, 0), "Talk to Glough in the north of the cavern. After, defeat the tortured and demonic gorillas.", true, combatGear2);
 		// TODO: 7152 and 7153 are the non-attackable version. Once NPC changes are properly checked, remove these
-	    ((NpcStep)(killTorturedAndDemonic)).addAlternateNpcs(NpcID.TORTURED_GORILLA_7151, NpcID.TORTURED_GORILLA_7153, NpcID.DEMONIC_GORILLA_7152, NpcID.DEMONIC_GORILLA, NpcID.DEMONIC_GORILLA_7145,
+		((NpcStep) (killTorturedAndDemonic)).addAlternateNpcs(NpcID.TORTURED_GORILLA_7151, NpcID.TORTURED_GORILLA_7153, NpcID.DEMONIC_GORILLA_7152, NpcID.DEMONIC_GORILLA, NpcID.DEMONIC_GORILLA_7145,
 			NpcID.DEMONIC_GORILLA_7146);
 
 		enterNorthOfTreeNoNieve = new ObjectStep(this, NullObjectID.NULL_28807, new WorldPoint(2435, 3520, 0), "Enter the breach north west of the Grand Tree.", combatGear, food, prayerPotions);
 
 		fightGlough = new NpcStep(this, NpcID.GLOUGH_7101, new WorldPoint(2075, 5677, 0), "Defeat Glough. He has 3 phases, changing rooms each time. You can safe spot the first 2 phases. Protect from Melee if you're next to him, or Protect from Magic if not in the third phase.", true);
 		fightGlough.addText("The easiest way to do phase 3 is to attack him from 1 tile away, have Protect from Magic on, and step away a tile whenever he pulls you closer.");
-		((NpcStep)(fightGlough)).addAlternateNpcs(NpcID.GLOUGH_7102, NpcID.GLOUGH_7103, NpcID.GLOUGH_7100);
-		((NpcStep)(fightGlough)).setMaxRoamRange(200);
+		((NpcStep) (fightGlough)).addAlternateNpcs(NpcID.GLOUGH_7102, NpcID.GLOUGH_7103, NpcID.GLOUGH_7100);
+		((NpcStep) (fightGlough)).setMaxRoamRange(200);
 		fightGlough.addSubSteps(enterNorthOfTreeNoNieve);
-	    talkToZooknockToFinish = new NpcStep(this, NpcID.ZOOKNOCK_7113, new WorldPoint(2027, 5610, 0), "Talk to Zooknock to teleport to the Grand Tree.");
-	    talkToZooknockToFinish.addDialogStep("Yes.");
-	    talkToNarnodeToFinish = new NpcStep(this, NpcID.KING_NARNODE_SHAREEN, new WorldPoint(2465, 3496, 0), "Talk Narnode to finish the madness!");
+		talkToZooknockToFinish = new NpcStep(this, NpcID.ZOOKNOCK_7113, new WorldPoint(2027, 5610, 0), "Talk to Zooknock to teleport to the Grand Tree.");
+		talkToZooknockToFinish.addDialogStep("Yes.");
+		talkToNarnodeToFinish = new NpcStep(this, NpcID.KING_NARNODE_SHAREEN, new WorldPoint(2465, 3496, 0), "Talk Narnode to finish the madness!");
 
 	}
 
@@ -646,55 +658,82 @@ public class MonkeyMadnessII extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(lemon, grape, pestle, pickaxe, logs, lightSource, hammerSidebar, chiselSidebar, mspeakAmulet, talismanOr1000Coins, ninjaGreegree));
+		return Arrays.asList(lemon, grape, pestle, pickaxe, logs, lightSource, hammerSidebar, chiselSidebar, mspeakAmulet, talismanOr1000Coins, ninjaGreegree);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(magicLog, food, staminaPotions, prayerPotions, antidote, combatGear));
+		return Arrays.asList(magicLog, food, staminaPotions, prayerPotions, antidote, combatGear);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Kruk (level 149, flinchable)", "Keef (level 178, safespottable)", "Kob (level 185, safespottable)", "9 Tortured gorillas (level 141)", "2 Demonic Gorillas (level 275)", "Glough (level 378)"));
+		return Arrays.asList("Kruk (level 149, flinchable)", "Keef (level 178, safespottable)", "Kob (level 185, safespottable)", "9 Tortured gorillas (level 141)", "2 Demonic Gorillas (level 275)", "Glough (level 378)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 		allSteps.add(new PanelDetails("Starting off",
-			new ArrayList<>(Arrays.asList(talkToNarnode, goInvestigateGloughHouse, goTalkToAnita, goToGlough3rdFloor, investigateStatue, searchRemains, searchCrate,
+			Arrays.asList(talkToNarnode, goInvestigateGloughHouse, goTalkToAnita, goToGlough3rdFloor, investigateStatue, searchRemains, searchCrate,
 				usePestleOnLemon, useNotesOnCandles, usePestleOnGrapes, useBrushOnNote, readScrawledNote, useTranslationOnNote, goShowNoteToNarnode, goTalkToAnitaWithNote,
-				bringTranslationToNarnode, talkToAuguste, talkToNarnodeAfterEntrana)), lemon, grapesHighlighted, pestleHighlighted, logs, noCombatItems));
+				bringTranslationToNarnode, talkToAuguste, talkToNarnodeAfterEntrana), lemon, grapesHighlighted, translationBook, pestleHighlighted, logs, noCombatItems));
 
-		ArrayList<QuestStep> chapter2Steps = new ArrayList<>(Arrays.asList(talkToGarkor, talkToAwowogei, talkToGarkorAfterAwow, talkToArcher, enterTrapdoor));
-		chapter2Steps.addAll(((AgilityDungeonSteps)(doAgilitySection)).getDisplaySteps());
+		List<QuestStep> chapter2Steps = QuestUtil.toArrayList(talkToGarkor, talkToAwowogei, talkToGarkorAfterAwow, talkToArcher, enterTrapdoor);
+		chapter2Steps.addAll(((AgilityDungeonSteps) (doAgilitySection)).getDisplaySteps());
 		chapter2Steps.addAll(Arrays.asList(pickUpKrukCorpse, leaveKrukDungeon, goDownToZooknock, talkToZooknock, talkToAwowAsKruk, talkToGarkorAfterKruk));
 		allSteps.add(new PanelDetails("Going undercover", chapter2Steps, ninjaGreegree, mspeakAmulet, talismanOr1000Coins, lightSource, combatGear, food, prayerPotions, staminaPotions));
 
 		allSteps.add(new PanelDetails("Defeating trolls and ogres",
-			new ArrayList<>(Arrays.asList(enterTrollStronghold, talkToKob, fightKob, talkToKeef, fightKeef)), combatGear));
+			Arrays.asList(enterTrollStronghold, talkToKob, fightKob, talkToKeef, fightKeef), combatGear));
 
-		ArrayList<QuestStep> sabotageSteps = new ArrayList<>(Arrays.asList(talkToGarkorAfterKeef, findSmith, talkToSmith, talkToGarkorAfterSmith,
-			talkToGarkorAfterSmith, talkToMonkeyGuard));
+		List<QuestStep> sabotageSteps = QuestUtil.toArrayList(talkToGarkorAfterKeef, findSmith, talkToSmith, talkToGarkorAfterSmith,
+			talkToGarkorAfterSmith, talkToMonkeyGuard);
 		sabotageSteps.addAll(sabotageShips.getDisplaySteps());
 		allSteps.add(new PanelDetails("Sabotage",
 			sabotageSteps, krukGreegree, mspeakAmulet));
 
 		allSteps.add(new PanelDetails("Glough's experiments",
-			new ArrayList<>(Arrays.asList(talkToGarkorAfterSabotage, enterKrukDungeonAgain, climbMonkeyBarsAsKruk, enterLabratory, climbOnGorilla,
+			Arrays.asList(talkToGarkorAfterSabotage, enterKrukDungeonAgain, climbMonkeyBarsAsKruk, enterLabratory, climbOnGorilla,
 				fightGorillas, tamperWithDevice, useChiselOnOnyx, useOnyxOnDevice, investigateIncubationChamber, talkToGarkorAfterLab, talkToAwowAfterLab,
-				talkToGarkorAfterLabAgain)), krukGreegree, mspeakAmulet));
+				talkToGarkorAfterLabAgain), krukGreegree, mspeakAmulet));
 
 		allSteps.add(new PanelDetails("Defending the tree",
-			new ArrayList<>(Arrays.asList(talkToNarnodeAfterLab, talkToNieve, killGorillasInStronghold, enterNorthOfTree, enterStrongholdCave, killTorturedAndDemonic,
-				fightGlough, talkToZooknockToFinish, talkToNarnodeToFinish)), combatGear2));
+			Arrays.asList(talkToNarnodeAfterLab, talkToNieve, killGorillasInStronghold, enterNorthOfTree, enterStrongholdCave, killTorturedAndDemonic,
+				fightGlough, talkToZooknockToFinish, talkToNarnodeToFinish), combatGear2));
 		return allSteps;
 	}
-}
 
+	@Override
+	public List<Requirement> getGeneralRecommended()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new ItemRequirement("It is beneficial to have a high Combat and Agility level", -1, -1));
+		return req;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.ENLIGHTENED_JOURNEY, QuestState.FINISHED));
+		req.add(new ItemRequirement("Unlocked the Tree Gnome Stronghold balloon route", -1, -1));
+		req.add(new QuestRequirement(QuestHelperQuest.THE_EYES_OF_GLOUPHRIE, QuestState.FINISHED));
+		req.add(new VarbitRequirement(QuestVarbits.QUEST_RECIPE_FOR_DISASTER_MONKEY_AMBASSADOR.getId(),
+			Operation.GREATER_EQUAL,  50, "Finished the 'Freeing King Awowogei' subquest of RFD"));
+		req.add(new QuestRequirement(QuestHelperQuest.TROLL_STRONGHOLD, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.WATCHTOWER, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.SLAYER, 69));
+		req.add(new SkillRequirement(Skill.CRAFTING, 70));
+		req.add(new SkillRequirement(Skill.HUNTER, 60));
+		req.add(new SkillRequirement(Skill.AGILITY, 55));
+		req.add(new SkillRequirement(Skill.THIEVING, 55));
+		req.add(new SkillRequirement(Skill.FIREMAKING, 60));
+		return req;
+	}
+}
